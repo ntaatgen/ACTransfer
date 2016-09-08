@@ -17,11 +17,13 @@ class BatchRun {
     let directory: NSURL
     var progress: Double = 0.0
     var traceFileName: NSURL
+    var activityTraceFileName: NSURL
     
     init(script: String, mainModel: Model, outputFile: NSURL, controller: MainViewController, directory: NSURL) {
         self.batchScript = script
         self.outputFileName = outputFile
         self.traceFileName = outputFile.URLByDeletingPathExtension!.URLByAppendingPathExtension("tracedat")
+        self.activityTraceFileName = outputFile.URLByDeletingPathExtension!.URLByAppendingPathExtension("activity")
         self.model = Model(batchMode: true)
         self.controller = controller
         self.directory = directory

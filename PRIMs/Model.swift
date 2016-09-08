@@ -59,12 +59,15 @@ class Model: NSObject, NSCoding {
     var outputData: [DataLine] = []
     var batchTraceData: [(Double, String, String)] = []
     var batchTrace: Bool = false
+    var activityTrace: Bool = false
+    var activityTraceData: [(Chunk)]
     var formerBuffers: [String:Chunk] = [:]
     var modelCode: String?
     static let rewardDefault = 0.0
     /// Reward used for operator-goal association learning. Also determines maximum run time. Switched off when set to 0.0 (default)
     var reward: Double = rewardDefault
     let silent: Bool
+    
     
 //    struct Results {
         var modelResults: [[(Double,Double)]] = []
