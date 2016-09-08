@@ -60,7 +60,7 @@ class Model: NSObject, NSCoding {
     var batchTraceData: [(Double, String, String)] = []
     var batchTrace: Bool = false
     var activityTrace: Bool = false
-    var activityTraceData: [(Chunk)]
+    var activityTraceData: [(String, Double)] = []
     var formerBuffers: [String:Chunk] = [:]
     var modelCode: String?
     static let rewardDefault = 0.0
