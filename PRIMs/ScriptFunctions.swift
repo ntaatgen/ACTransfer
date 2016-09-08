@@ -631,7 +631,6 @@ func updateRating(content: [Factor], model: Model?) throws -> (result: Factor?, 
 func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
     let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/CurrentModel/Models/10-parameterSweepPartialMatchingOnly/itemratings.txt"
     
-    print(content[1])
     var input: [String] = [];
     do {
         if true {//let path = NSBundle.mainBundle().pathForResource(filepath, ofType: "txt"){
@@ -648,13 +647,19 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
             probabilityP += 1
         }
     }
+    print(probabilityP)
     probabilityP = probabilityP * 2 - 25
-    
-    let targetRating = content[0].doubleValue()! + log(Double(probabilityP / (100 - probabilityP)))
-    
+    if(probabilityP > 99) {
+        probabilityP = 99
+    } else if (probabilityP < 50) {
+        probabilityP = 50
+    }
+    let targetRating = content[0].doubleValue()! + log(Double(probabilityP) / Double(100 - probabilityP))
+    print(content[0])
+    print(probabilityP)
+    print(targetRating)
     var bestMatch = ["10", "10", 1000.0]
     for line in input {
-        print(input)
         let addend1 = line.substringWithRange(Range<String.Index>(start: line.startIndex, end: line.startIndex.advancedBy(1)))
         let addend2 = line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(4), end: line.startIndex.advancedBy(5)))
         let itemRating = Double(line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(6), end: line.endIndex)))
@@ -669,6 +674,11 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
                     }
                     idx += 1
                 }
+                //print(addend1 + " x " + addend2 + "\n")
+                //print(abs(targetRating - itemRating!))
+                //print(targetRating)
+                //print(itemRating!)
+                //print(content[0])
                 if recent == 0 && abs(targetRating - itemRating!) < Double(bestMatch[2].description) {
                     bestMatch = [addend1, addend2, targetRating - itemRating!]
                 }
@@ -678,6 +688,10 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
         }
         
     }
+    if(bestMatch[0] == "10") {
+        print("hoi")
+    }
+    print(bestMatch)
     
     let bestMatchFinal = ScriptArray(elements: [generateFactorExpression(Factor.Str(bestMatch[0].description)), generateFactorExpression(Factor.Str(bestMatch[1].description)), generateFactorExpression(Factor.RealNumber(Double(bestMatch[2].description)!))])
     
