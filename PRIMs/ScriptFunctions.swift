@@ -7,6 +7,7 @@
 //
 
 import Foundation
+import GameplayKit
 
 let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done: Bool)] =
 ["screen": setScreen,
@@ -39,6 +40,8 @@ let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done
     "open-jar": openJar,
     "report-memory": reportMemory,
     "imaginal-to-dm": imaginalToDM,
+    "update-rating": updateRating,
+    "select-problem": selectProblem,
     ]
 
 
@@ -552,7 +555,7 @@ func openJar(content: [Factor], model: Model?) throws -> (result: Factor?, done:
     task.launch()
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
     let output: String = NSString(data: data, encoding: NSUTF8StringEncoding)! as String
-    print(output)
+    //print(output)
     return (Factor.Str(output), true)
 }
 
@@ -583,9 +586,102 @@ func reportMemory(content: [Factor], model: Model?) throws -> (result: Factor?, 
 
 /* Put the contents of the imaginal buffer in the declarative memory
  */
-func imaginalToDM(conten: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
+func imaginalToDM(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
     if let imaginalChunk = model!.buffers["imaginal"] {
         model!.dm.addToDM(imaginalChunk)
     }
     return(nil, true)
 }
+
+/* High Speed, High Stakes Scoring Rule 
+   First argument: current rating of model
+   Second argument: current rating of item
+   Third argument: accuracy
+   Fourth argument: response time
+   Fifth argument: response deadline
+ */
+func updateRating(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
+    if (content.count < 4) {
+        throw RunTimeError.errorInFunction("The function updateModelRating requires five arguments")
+    } else if (Double(content[0].description) == nil) {
+        throw RunTimeError.errorInFunction("\(content[0]) is not a double")
+    } else if (Double(content[1].description) == nil) {
+        throw RunTimeError.errorInFunction("\(content[1]) is not a double")
+    } else if (content[2].type() != "integer") {
+        throw RunTimeError.errorInFunction("\(content[2]) is not an integer")
+    } else if (Double(content[3].description) == nil) {
+        throw RunTimeError.errorInFunction("\(content[3]) is not a double")
+    } else if (Double(content[4].description) == nil) {
+        throw RunTimeError.errorInFunction("\(content[4]) is not a double")
+    }
+    let e = 2.71828
+    let score = (2 * Double(content[2].intValue()! - 1)) * (1 - (1/content[4].doubleValue()!) * content[3].doubleValue()!)
+    let euler = pow(e, (2 * (content[0].doubleValue()! - content[1].doubleValue()!)))
+    let expectedProbability = (euler + 1) / (euler - 1) - (1 / (content[0].doubleValue()! - content[1].doubleValue()!))
+    let newModelRating = content[0].doubleValue()! + 0.0075 * (score - expectedProbability)
+    let newItemRating = content[1].doubleValue()! + 0.0075 * (expectedProbability - score)
+    
+    return(Factor.Arr(ScriptArray(elements: [generateFactorExpression(Factor.RealNumber(newModelRating)), generateFactorExpression(Factor.RealNumber(newItemRating))])), true)
+}
+
+/* Select Problem
+   First argument: current rating of model
+   Second argument: list of last 10 problems
+ */
+func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
+    let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/CurrentModel/Models/10-parameterSweepPartialMatchingOnly/itemratings.txt"
+    
+    print(content[1])
+    var input: [String] = [];
+    do {
+        if true {//let path = NSBundle.mainBundle().pathForResource(filepath, ofType: "txt"){
+            let data = try String(contentsOfFile:filepath, encoding: NSUTF8StringEncoding)
+            input = data.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet())
+        }
+    } catch {
+        throw RunTimeError.errorInFunction("Select Problem: File cannot be read")
+    }
+    
+    var probabilityP = 0
+    for _ in 1...100 {
+        if Int(arc4random_uniform(100)) > 50 {
+            probabilityP += 1
+        }
+    }
+    probabilityP = probabilityP * 2 - 25
+    
+    let targetRating = content[0].doubleValue()! + log(Double(probabilityP / (100 - probabilityP)))
+    
+    var bestMatch = ["10", "10", 1000.0]
+    for line in input {
+        print(input)
+        let addend1 = line.substringWithRange(Range<String.Index>(start: line.startIndex, end: line.startIndex.advancedBy(1)))
+        let addend2 = line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(4), end: line.startIndex.advancedBy(5)))
+        let itemRating = Double(line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(6), end: line.endIndex)))
+        
+        var recent = 0
+        switch content[1] {
+            case .Arr(let arr):
+                var idx = 0
+                while idx < arr.elements.count {
+                    if arr.elements[idx].description == addend1 + " x " + addend2 {
+                        recent = 1
+                    }
+                    idx += 1
+                }
+                if recent == 0 && abs(targetRating - itemRating!) < Double(bestMatch[2].description) {
+                    bestMatch = [addend1, addend2, targetRating - itemRating!]
+                }
+            
+            default:
+                throw RunTimeError.errorInFunction("Wrong argument in select-problem")
+        }
+        
+    }
+    
+    let bestMatchFinal = ScriptArray(elements: [generateFactorExpression(Factor.Str(bestMatch[0].description)), generateFactorExpression(Factor.Str(bestMatch[1].description)), generateFactorExpression(Factor.RealNumber(Double(bestMatch[2].description)!))])
+    
+    return (Factor.Arr(bestMatchFinal), true)
+
+}
+
