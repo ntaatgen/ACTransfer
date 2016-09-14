@@ -269,9 +269,11 @@ class Declarative: NSObject, NSCoding  {
                 }
             }
         }
-//        for (chunk,activation) in conflictSet {
-//            model.addToTrace("   CFS: \(chunk.name) \(activation)")
-//        }
+        if !model.silent && model.dm.activationTrace {
+            for (chunk,activation) in conflictSet {
+                model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 2)
+            }
+        }
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
         } else {
