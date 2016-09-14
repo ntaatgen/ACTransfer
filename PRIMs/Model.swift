@@ -57,6 +57,7 @@ class Model: NSObject, NSCoding {
     /// Maximum time to run the model
     var timeThreshold = 200.0
     var outputData: [DataLine] = []
+    /// Batch Trace Data
     var batchTraceData: [(Double, String, String)] = []
     var batchTrace: Bool = false
     var formerBuffers: [String:Chunk] = [:]
@@ -65,6 +66,7 @@ class Model: NSObject, NSCoding {
     /// Reward used for operator-goal association learning. Also determines maximum run time. Switched off when set to 0.0 (default)
     var reward: Double = rewardDefault
     let silent: Bool
+    
     
 //    struct Results {
         var modelResults: [[(Double,Double)]] = []
@@ -233,12 +235,13 @@ class Model: NSObject, NSCoding {
     }
     
     /* Add to batch trace
-     * Input parameters: timestamp (double) and addToTrace (string)
+     * Input parameters: timestamp (double), type of event (string) and addToTrace (string)
      * No return parameter
      */
     func addToBatchTrace(timestamp: Double, type: String, addToTrace: String) {
         batchTraceData += [(timestamp, type, addToTrace)]
     }
+    
     
 //    func buffersToText() -> String {
 //        var s: String = ""
@@ -359,10 +362,8 @@ class Model: NSObject, NSCoding {
             dm.partialMatching = boolVal
         case "batch-trace:":
             batchTrace = boolVal
-        //case "batch-trace":
-        //    if batchMode {
-        //        batchTrace = true
-        //    }
+        case "activation-trace:":
+            dm.activationTrace = boolVal
         default:
             if (numVal == nil) {return false}
             switch parameter {

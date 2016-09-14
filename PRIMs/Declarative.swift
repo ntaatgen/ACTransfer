@@ -33,6 +33,8 @@ class Declarative: NSObject, NSCoding  {
     static let defaultActivationDefault: Double? = nil
     static let partialMatchingDefault = false
     static let newPartialMatchingDefault: Double? = nil
+    static let activationTraceDefault = false
+    
     /// Baseleveldecay parameter (d in ACT-R)
     var baseLevelDecay: Double = baseLevelDecayDefault
     /// Optimized learning on or off
@@ -88,6 +90,10 @@ class Declarative: NSObject, NSCoding  {
     var partialMatching = partialMatchingDefault
     var newPartialMatchingPow = newPartialMatchingDefault
     var newPartialMatchingExp = newPartialMatchingDefault
+    
+    /// Activation Trace Data
+    var activationTrace = activationTraceDefault
+    var activationTraceData: [(Double, String, Double)] = []
     
     
     var retrieveBusy = false
@@ -263,9 +269,11 @@ class Declarative: NSObject, NSCoding  {
                 }
             }
         }
-//        for (chunk,activation) in conflictSet {
-//            model.addToTrace("   CFS: \(chunk.name) \(activation)")
-//        }
+        if !model.silent && model.dm.activationTrace {
+            for (chunk,activation) in conflictSet {
+                model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 2)
+            }
+        }
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
         } else {
@@ -274,6 +282,13 @@ class Declarative: NSObject, NSCoding  {
         }
         
     }
+    
+    func addToActivationTrace(timestamp: Double) {
+        chunkloop: for(_, ch1) in chunks {
+            activationTraceData += [(timestamp, ch1.name, ch1.activation())]
+        }
+    }
+    
     
     /* Mismatch Functions */
     // Mismatch function for operators

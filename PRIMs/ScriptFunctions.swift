@@ -226,6 +226,11 @@ func trialEnd(content: [Factor], model: Model?) throws -> (result: Factor?, done
     }
     model!.commitToTrace(false)
     model!.initializeNextTrial()
+    
+    if model!.dm.activationTrace {
+        model!.dm.addToActivationTrace(model!.time)
+    }
+    
     return(nil, true)
 }
 
