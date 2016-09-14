@@ -647,7 +647,7 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
             probabilityP += 1
         }
     }
-    print(probabilityP)
+
     probabilityP = probabilityP * 2 - 25
     if(probabilityP > 99) {
         probabilityP = 99
@@ -655,9 +655,7 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
         probabilityP = 50
     }
     let targetRating = content[0].doubleValue()! + log(Double(probabilityP) / Double(100 - probabilityP))
-    print(content[0])
-    print(probabilityP)
-    print(targetRating)
+
     var bestMatch = ["10", "10", 1000.0]
     for line in input {
         let addend1 = line.substringWithRange(Range<String.Index>(start: line.startIndex, end: line.startIndex.advancedBy(1)))
@@ -688,10 +686,6 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
         }
         
     }
-    if(bestMatch[0] == "10") {
-        print("hoi")
-    }
-    print(bestMatch)
     
     let bestMatchFinal = ScriptArray(elements: [generateFactorExpression(Factor.Str(bestMatch[0].description)), generateFactorExpression(Factor.Str(bestMatch[1].description)), generateFactorExpression(Factor.RealNumber(Double(bestMatch[2].description)!))])
     
