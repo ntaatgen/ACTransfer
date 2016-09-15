@@ -305,32 +305,32 @@ class Declarative: NSObject, NSCoding  {
     }
     
     // Mismatch function for numbers - Linear
-//    func mismatchNumbers(x: Value, _ y: Value) -> Double {
-//        /* Return similarity if there is one, else return -1
-//         Similarity is calculated by dividing the smallest number by the largest number.*/
-//        if (Double(x.description) != nil && Double(y.description) != nil)  {
-//            let maxValue = max(Double(x.description)!, Double(y.description)!)
-//            let minValue = min(Double(x.description)!, Double(y.description)!)
-//            let mismatch = 0 - (maxValue - minValue) / 10
-//            return mismatch >= -1 ? mismatch : -1
-//        } else {
-//            return -1
-//        }
-//    }
-    
-    // Mismatch function for numbers - Christian Lebiere
     func mismatchNumbers(x: Value, _ y: Value) -> Double {
-        /* Return similarity if possible, else return -1
-        Similarity is calculated by dividing the smallest number by the largest number.
-        This function does not work for similarities with zero. */
-        if (x.number() != nil) && (y.number() != nil)  {
-            let maxValue = max(x.number()!, y.number()!)
-            let minValue = min(x.number()!, y.number()!)
-            return maxValue == 0.0 ? -1.0 : (minValue / maxValue - 1)
+        /* Return similarity if there is one, else return -1
+         Similarity is calculated by dividing the smallest number by the largest number.*/
+        if (Double(x.description) != nil && Double(y.description) != nil)  {
+            let maxValue = max(Double(x.description)!, Double(y.description)!)
+            let minValue = min(Double(x.description)!, Double(y.description)!)
+            let mismatch = 0 - (maxValue - minValue) / 81
+            return mismatch >= -1 ? mismatch : -1
         } else {
             return -1
         }
     }
+    
+//    // Mismatch function for numbers - Christian Lebiere
+//    func mismatchNumbers(x: Value, _ y: Value) -> Double {
+//        /* Return similarity if possible, else return -1
+//        Similarity is calculated by dividing the smallest number by the largest number.
+//        This function does not work for similarities with zero. */
+//        if (x.number() != nil) && (y.number() != nil)  {
+//            let maxValue = max(x.number()!, y.number()!)
+//            let minValue = min(x.number()!, y.number()!)
+//            return maxValue == 0.0 ? -1.0 : (minValue / maxValue - 1)
+//        } else {
+//            return -1
+//        }
+//    }
     
     
     // General Mismatch Function
@@ -381,7 +381,12 @@ class Declarative: NSObject, NSCoding  {
                 bestActivation = activation
                 bestMatch = ch1
             }        
+        }
+        if !model.silent && model.dm.activationTrace {
+            for (chunk,activation) in conflictSet {
+                model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 2)
             }
+        }
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
         } else {
