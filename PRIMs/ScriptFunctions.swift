@@ -361,7 +361,11 @@ func issueReward(content: [Factor], model: Model?) throws -> (result: Factor?, d
         default: throw RunTimeError.nonNumberArgument
         }
     }
-    model!.operators.updateOperatorSjis(reward)
+    if content.count > 1 {
+        model!.operators.updateOperatorSjis(reward, content[1])
+    } else {
+        model!.operators.updateOperatorSjis(reward, nil)
+    }
     return (nil, true)
 }
 
