@@ -537,7 +537,7 @@ class Model: NSObject, NSCoding {
                     running = false
                     fallingThrough = true
                     //                    procedural.issueReward(0.0)
-                    operators.updateOperatorSjis(0.0)
+                    operators.updateOperatorSjis(0.0, time: nil)
                     let dl = DataLine(eventType: "trial-end", eventParameter1: "fail", eventParameter2: "void", eventParameter3: "void", inputParameters: scenario.inputMappingForTrace, time: time - startTime)
                     outputData.append(dl)
                     return
@@ -600,7 +600,7 @@ class Model: NSObject, NSCoding {
                 if scenario.nextEventTime == nil {
                     running = false
 //                    procedural.issueReward(0.0)
-                    operators.updateOperatorSjis(0.0)
+                    operators.updateOperatorSjis(0.0, time: nil)
                     let dl = DataLine(eventType: "trial-end", eventParameter1: "fail", eventParameter2: "void", eventParameter3: "void", inputParameters: scenario.inputMappingForTrace, time: time - startTime)
                     outputData.append(dl)
                     return
@@ -643,7 +643,7 @@ class Model: NSObject, NSCoding {
         // We are done if the current action is the goal action, or there is no goal action and slot1 in the goal is set to stop
         if testGoalAction() || (scenario.goalAction.isEmpty && buffers["goal"]?.slotvals["slot1"] != nil && buffers["goal"]!.slotvals["slot1"]!.description == "stop")  {
 //            procedural.issueReward(40.0)
-            operators.updateOperatorSjis(reward)
+            operators.updateOperatorSjis(reward, time: nil)
             if let imaginalChunk = buffers["imaginal"] {
                 dm.addToDM(imaginalChunk)
             }
@@ -656,7 +656,7 @@ class Model: NSObject, NSCoding {
             let maxTime = reward == 0.0 ? timeThreshold : reward
             if time - startTime > maxTime || (buffers["goal"]?.slotvals["slot1"] != nil && buffers["goal"]!.slotvals["slot1"]!.description == "stop") {
 //                procedural.issueReward(0.0)
-                operators.updateOperatorSjis(0.0)
+                operators.updateOperatorSjis(0.0, time: nil)
                 running = false
                 resultAdd(time - startTime)
                 let dl = DataLine(eventType: "trial-end", eventParameter1: "fail", eventParameter2: "void", eventParameter3: "void", inputParameters: scenario.inputMappingForTrace, time: time - startTime)

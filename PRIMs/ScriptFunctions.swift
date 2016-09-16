@@ -362,9 +362,9 @@ func issueReward(content: [Factor], model: Model?) throws -> (result: Factor?, d
         }
     }
     if content.count > 1 {
-        model!.operators.updateOperatorSjis(reward, content[1])
+        model!.operators.updateOperatorSjis(reward, time: Double(content[1].description))
     } else {
-        model!.operators.updateOperatorSjis(reward, nil)
+        model!.operators.updateOperatorSjis(reward, time: nil)
     }
     return (nil, true)
 }
