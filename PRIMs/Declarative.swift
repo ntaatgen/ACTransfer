@@ -33,8 +33,6 @@ class Declarative: NSObject, NSCoding  {
     static let defaultActivationDefault: Double? = nil
     static let partialMatchingDefault = false
     static let newPartialMatchingDefault: Double? = nil
-    static let activationTraceDefault = false
-    
     /// Baseleveldecay parameter (d in ACT-R)
     var baseLevelDecay: Double = baseLevelDecayDefault
     /// Optimized learning on or off
@@ -90,10 +88,6 @@ class Declarative: NSObject, NSCoding  {
     var partialMatching = partialMatchingDefault
     var newPartialMatchingPow = newPartialMatchingDefault
     var newPartialMatchingExp = newPartialMatchingDefault
-    
-    /// Activation Trace Data
-    var activationTrace = activationTraceDefault
-    var activationTraceData: [(Double, String, Double)] = []
     
     
     var retrieveBusy = false
@@ -304,34 +298,19 @@ class Declarative: NSObject, NSCoding  {
         }
     }
     
-    // Mismatch function for numbers - Linear
+    // Mismatch function for numbers
     func mismatchNumbers(x: Value, _ y: Value) -> Double {
         /* Return similarity if there is one, else return -1
          Similarity is calculated by dividing the smallest number by the largest number.*/
-        if (Double(x.description) != nil && Double(y.description) != nil)  {
+        if (Int(x.description) != nil && Int(y.description) != nil)  {
             let maxValue = max(Double(x.description)!, Double(y.description)!)
             let minValue = min(Double(x.description)!, Double(y.description)!)
-            let mismatch = 0 - (maxValue - minValue) / 81
+            let mismatch = 0 - (maxValue - minValue) / 10
             return mismatch >= -1 ? mismatch : -1
         } else {
             return -1
         }
     }
-    
-//    // Mismatch function for numbers - Christian Lebiere
-//    func mismatchNumbers(x: Value, _ y: Value) -> Double {
-//        /* Return similarity if possible, else return -1
-//        Similarity is calculated by dividing the smallest number by the largest number.
-//        This function does not work for similarities with zero. */
-//        if (x.number() != nil) && (y.number() != nil)  {
-//            let maxValue = max(x.number()!, y.number()!)
-//            let minValue = min(x.number()!, y.number()!)
-//            return maxValue == 0.0 ? -1.0 : (minValue / maxValue - 1)
-//        } else {
-//            return -1
-//        }
-//    }
-    
     
     // General Mismatch Function
     func mismatchFunction(x: Value, y: Value) -> Double? {
