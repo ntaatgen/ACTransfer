@@ -630,7 +630,6 @@ func updateRating(content: [Factor], model: Model?) throws -> (result: Factor?, 
  Second argument: list of last 10 problems
  */
 func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
-    print("Model rating: \(content[0])")
     let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/CurrentModel/Models/10-parameterSweepPartialMatchingOnly/itemratings.txt"
     
     var input: [String] = [];
@@ -674,11 +673,6 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
                 }
                 idx += 1
             }
-            //print(addend1 + " x " + addend2 + "\n")
-            //print(abs(targetRating - itemRating!))
-            //print(targetRating)
-            //print(itemRating!)
-            //print(content[0])
             if recent == 0 && abs(targetRating - itemRating!) < Double(bestMatch[2].description) {
                 bestMatch = [addend1, addend2, targetRating - itemRating!]
             }
@@ -695,7 +689,13 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
     
 }
 
-
+/**
+ Present items in a fixed math garden way
+ */
+func fixedProblems(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
+    print("fixed")
+    return(nil, true)
+}
 
 /**
  Set the number of references of a chunk
