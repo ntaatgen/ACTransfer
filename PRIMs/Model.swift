@@ -65,6 +65,9 @@ class Model: NSObject, NSCoding {
     /// Reward used for operator-goal association learning. Also determines maximum run time. Switched off when set to 0.0 (default)
     var reward: Double = rewardDefault
     let silent: Bool
+    // Activition Trace
+    var activationTraceData: [(Double, String, Double)] = []
+    var activationTrace: Bool = false
     
 //    struct Results {
         var modelResults: [[(Double,Double)]] = []
@@ -109,7 +112,6 @@ class Model: NSObject, NSCoding {
         trace = []
         self.silent = silent
         self.batchMode = batchMode
-     
     }
     
     required convenience init?(coder aDecoder: NSCoder) {
@@ -233,11 +235,19 @@ class Model: NSObject, NSCoding {
     }
     
     /* Add to batch trace
-     * Input parameters: timestamp (double) and addToTrace (string)
+     * Input parameters: timestamp (double), type (string) and addToTrace (string)
      * No return parameter
      */
     func addToBatchTrace(timestamp: Double, type: String, addToTrace: String) {
         batchTraceData += [(timestamp, type, addToTrace)]
+    }
+    
+    /* Add to activation trace
+     * Input parameters: timestamp (double) and chunkname (string), chunk activation (double)
+     * No return parameter
+     */
+    func addToActivationTrace(timestamp: Double, chunkName: String, activation: Double) {
+        activationTraceData += [(timestamp, chunkName, activation)]
     }
     
 //    func buffersToText() -> String {
@@ -359,10 +369,8 @@ class Model: NSObject, NSCoding {
             dm.partialMatching = boolVal
         case "batch-trace:":
             batchTrace = boolVal
-        //case "batch-trace":
-        //    if batchMode {
-        //        batchTrace = true
-        //    }
+        case "activation-trace:":
+            activationTrace = boolVal
         default:
             if (numVal == nil) {return false}
             switch parameter {

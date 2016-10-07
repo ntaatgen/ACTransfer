@@ -263,9 +263,18 @@ class Declarative: NSObject, NSCoding  {
                 }
             }
         }
-//        for (chunk,activation) in conflictSet {
-//            model.addToTrace("   CFS: \(chunk.name) \(activation)")
-//        }
+        
+        if model.activationTrace {
+            if !model.batchMode {
+                for (chunk,activation) in conflictSet {
+                    model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 3)
+                }
+            } else {
+                for (chunk, activation) in conflictSet {
+                    model.addToActivationTrace(model.time - model.startTime, chunkName: chunk.name, activation: activation)
+                }
+            }
+        }
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
         } else {
