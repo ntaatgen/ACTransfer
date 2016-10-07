@@ -65,6 +65,9 @@ class Model: NSObject, NSCoding {
     /// Reward used for operator-goal association learning. Also determines maximum run time. Switched off when set to 0.0 (default)
     var reward: Double = rewardDefault
     let silent: Bool
+    // Activition Trace
+    var activationTraceData: [(Double, String, Double)] = []
+    var activationTrace: Bool = false
     
     
 //    struct Results {
