@@ -65,9 +65,7 @@ class Model: NSObject, NSCoding {
     /// Reward used for operator-goal association learning. Also determines maximum run time. Switched off when set to 0.0 (default)
     var reward: Double = rewardDefault
     let silent: Bool
-    // Activition Trace
-    var activationTraceData: [(Double, String, Double)] = []
-    var activationTrace: Bool = false
+    
     
 //    struct Results {
         var modelResults: [[(Double,Double)]] = []
@@ -242,13 +240,6 @@ class Model: NSObject, NSCoding {
         batchTraceData += [(timestamp, type, addToTrace)]
     }
     
-    /* Add to activation trace
-     * Input parameters: timestamp (double) and chunkname (string), chunk activation (double)
-     * No return parameter
-     */
-    func addToActivationTrace(timestamp: Double, chunkName: String, activation: Double) {
-        activationTraceData += [(timestamp, chunkName, activation)]
-    }
     
 //    func buffersToText() -> String {
 //        var s: String = ""
