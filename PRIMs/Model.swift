@@ -243,6 +243,13 @@ class Model: NSObject, NSCoding {
         batchTraceData += [(timestamp, type, addToTrace)]
     }
     
+    /* Add to activation trace
+     * Input parameters: timestamp (double) and chunkname (string), chunk activation (double)
+     * No return parameter
+     */
+    func addToActivationTrace(timestamp: Double, chunkName: String, activation: Double) {
+        activationTraceData += [(timestamp, chunkName, activation)]
+    }
     
 //    func buffersToText() -> String {
 //        var s: String = ""

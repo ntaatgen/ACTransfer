@@ -40,6 +40,8 @@ let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done
     "report-memory": reportMemory,
     "imaginal-to-dm": imaginalToDM,
     "set-references": setReferences,
+    "select-problem": selectProblem,
+    "update-rating": updateRating,
     ]
 
 

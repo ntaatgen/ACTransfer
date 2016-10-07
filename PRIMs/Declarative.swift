@@ -283,14 +283,7 @@ class Declarative: NSObject, NSCoding  {
         }
         
     }
-    
-    func addToActivationTrace(timestamp: Double) {
-        chunkloop: for(_, ch1) in chunks {
-            activationTraceData += [(timestamp, ch1.name, ch1.activation())]
-        }
-    }
-    
-    
+        
     /* Mismatch Functions */
     // Mismatch function for operators
     func mismatchOperators(x: Value, _ y: Value) -> Double {
