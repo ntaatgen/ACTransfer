@@ -7,7 +7,6 @@
 //
 
 import Foundation
-import GameplayKit
 
 let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done: Bool)] =
 ["screen": setScreen,
@@ -40,8 +39,7 @@ let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done
     "open-jar": openJar,
     "report-memory": reportMemory,
     "imaginal-to-dm": imaginalToDM,
-    "update-rating": updateRating,
-    "select-problem": selectProblem,
+    "set-references": setReferences,
     ]
 
 
@@ -226,11 +224,6 @@ func trialEnd(content: [Factor], model: Model?) throws -> (result: Factor?, done
     }
     model!.commitToTrace(false)
     model!.initializeNextTrial()
-    
-    if model!.dm.activationTrace {
-        model!.dm.addToActivationTrace(model!.time)
-    }
-    
     return(nil, true)
 }
 
@@ -548,7 +541,6 @@ func strToInt(content: [Factor], model: Model?) throws -> (result: Factor?, done
  Open jar file, parameters are passed on to command line
  */
 func openJar(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
-
     let task = NSTask()
     task.launchPath = "/usr/bin/java"
     task.arguments = ["-jar"]
@@ -559,8 +551,9 @@ func openJar(content: [Factor], model: Model?) throws -> (result: Factor?, done:
     task.standardOutput = pipe
     task.launch()
     let data = pipe.fileHandleForReading.readDataToEndOfFile()
+    pipe.fileHandleForReading.closeFile()
     let output: String = NSString(data: data, encoding: NSUTF8StringEncoding)! as String
-    //print(output)
+    task.terminate()
     return (Factor.Str(output), true)
 }
 
@@ -598,12 +591,12 @@ func imaginalToDM(content: [Factor], model: Model?) throws -> (result: Factor?, 
     return(nil, true)
 }
 
-/* High Speed, High Stakes Scoring Rule 
-   First argument: current rating of model
-   Second argument: current rating of item
-   Third argument: accuracy
-   Fourth argument: response time
-   Fifth argument: response deadline
+/* High Speed, High Stakes Scoring Rule
+ First argument: current rating of model
+ Second argument: current rating of item
+ Third argument: accuracy
+ Fourth argument: response time
+ Fifth argument: response deadline
  */
 func updateRating(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
     if (content.count < 4) {
@@ -630,10 +623,11 @@ func updateRating(content: [Factor], model: Model?) throws -> (result: Factor?, 
 }
 
 /* Select Problem
-   First argument: current rating of model
-   Second argument: list of last 10 problems
+ First argument: current rating of model
+ Second argument: list of last 10 problems
  */
 func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
+    print("Model rating: \(content[0])")
     let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/CurrentModel/Models/10-parameterSweepPartialMatchingOnly/itemratings.txt"
     
     var input: [String] = [];
@@ -652,7 +646,7 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
             probabilityP += 1
         }
     }
-
+    
     probabilityP = probabilityP * 2 - 25
     if(probabilityP > 99) {
         probabilityP = 99
@@ -660,7 +654,7 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
         probabilityP = 50
     }
     let targetRating = content[0].doubleValue()! + log(Double(probabilityP) / Double(100 - probabilityP))
-
+    
     var bestMatch = ["10", "10", 1000.0]
     for line in input {
         let addend1 = line.substringWithRange(Range<String.Index>(start: line.startIndex, end: line.startIndex.advancedBy(1)))
@@ -669,25 +663,25 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
         
         var recent = 0
         switch content[1] {
-            case .Arr(let arr):
-                var idx = 0
-                while idx < arr.elements.count {
-                    if arr.elements[idx].description == addend1 + " x " + addend2 {
-                        recent = 1
-                    }
-                    idx += 1
+        case .Arr(let arr):
+            var idx = 0
+            while idx < arr.elements.count {
+                if arr.elements[idx].description == addend1 + " x " + addend2 {
+                    recent = 1
                 }
-                //print(addend1 + " x " + addend2 + "\n")
-                //print(abs(targetRating - itemRating!))
-                //print(targetRating)
-                //print(itemRating!)
-                //print(content[0])
-                if recent == 0 && abs(targetRating - itemRating!) < Double(bestMatch[2].description) {
-                    bestMatch = [addend1, addend2, targetRating - itemRating!]
-                }
+                idx += 1
+            }
+            //print(addend1 + " x " + addend2 + "\n")
+            //print(abs(targetRating - itemRating!))
+            //print(targetRating)
+            //print(itemRating!)
+            //print(content[0])
+            if recent == 0 && abs(targetRating - itemRating!) < Double(bestMatch[2].description) {
+                bestMatch = [addend1, addend2, targetRating - itemRating!]
+            }
             
-            default:
-                throw RunTimeError.errorInFunction("Wrong argument in select-problem")
+        default:
+            throw RunTimeError.errorInFunction("Wrong argument in select-problem")
         }
         
     }
@@ -695,6 +689,22 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
     let bestMatchFinal = ScriptArray(elements: [generateFactorExpression(Factor.Str(bestMatch[0].description)), generateFactorExpression(Factor.Str(bestMatch[1].description)), generateFactorExpression(Factor.RealNumber(Double(bestMatch[2].description)!))])
     
     return (Factor.Arr(bestMatchFinal), true)
-
+    
 }
 
+
+
+/**
+ Set the number of references of a chunk
+ 1st argument: chunk name
+ 2nd argument: number of references (int)
+ */
+func setReferences(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
+    guard content.count == 2 else { throw RunTimeError.invalidNumberOfArguments }
+    let chunk = model!.dm.chunks[content[0].description]
+    guard chunk != nil else { throw RunTimeError.errorInFunction("Chunk does not exist") }
+    let value = content[1].intValue()
+    guard value != nil else { throw RunTimeError.errorInFunction("Second argument is not an int") }
+    chunk!.references = value!
+    return(nil, true)
+}
