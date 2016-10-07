@@ -24,7 +24,7 @@ class BatchRun {
         self.batchScript = script
         self.outputFileName = outputFile
         self.traceFileName = outputFile.URLByDeletingPathExtension!.URLByAppendingPathExtension("tracedat")
-        self.activationTraceFileName = outputFile.URLByDeletingPathExtension!.URLByAppendingPathExtension("activity")
+        self.activationTraceFileName = outputFile.URLByDeletingPathExtension!.URLByAppendingPathExtension("activitydat")
         self.model = Model(batchMode: true)
         self.controller = controller
         self.directory = directory
@@ -129,12 +129,13 @@ class BatchRun {
                             self.model.batchTraceData = []
                         }
                         
-                        var activationOutput = ""
-                        if self.model.dm.activationTrace {
-                            for (time, chunk, activation) in self.model.dm.activationTraceData {
-                                activationOutput += "\(i) \(taskname!) \(taskLabel!) \(j) \(time) \(chunk) \(activation) \n"
+                        // Print activition trace to file
+                        var activationTraceOutput = ""
+                        if self.model.activationTrace {
+                            for (time, chunk, activation) in self.model.activationTraceData {
+                                activationTraceOutput += "\(i) \(taskname!) \(taskLabel!) \(j) \(time) \(chunk) \(activation) \n"
                             }
-                            self.model.dm.activationTraceData = []
+                            self.model.activationTraceData = []
                         }
                         
                         if !newfile {
@@ -168,13 +169,12 @@ class BatchRun {
                             }
                             
                             // Activation Trace File
-                            if NSFileManager.defaultManager().fileExistsAtPath(self.activationTraceFileName.path!) && self.model.dm.activationTrace {
+                            if NSFileManager.defaultManager().fileExistsAtPath(self.activationTraceFileName.path!) && self.model.activationTrace {
                                 var err:NSError?
                                 do {
-                                    print(self.activationTraceFileName)
                                     let fileHandle = try NSFileHandle(forWritingToURL: self.activationTraceFileName)
                                     fileHandle.seekToEndOfFile()
-                                    let data = activationOutput.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+                                    let data = activationTraceOutput.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
                                     fileHandle.writeData(data!)
                                     fileHandle.closeFile()
                                 } catch let error as NSError {
@@ -202,10 +202,10 @@ class BatchRun {
                             
                             // Activation Trace file
                             do {
-                                try activationOutput.writeToURL(self.activationTraceFileName, atomically: false, encoding: NSUTF8StringEncoding)
+                                try traceOutput.writeToURL(self.activationTraceFileName, atomically: false, encoding: NSUTF8StringEncoding)
                             } catch let error as NSError {
                                 err = error
-                                self.mainModel.addToTraceField("Can't write tracefile \(err)")
+                                self.mainModel.addToTraceField("Can't write activation tracefile \(err)")
                             }
                         }
                     }

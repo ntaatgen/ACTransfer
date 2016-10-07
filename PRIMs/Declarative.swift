@@ -263,9 +263,16 @@ class Declarative: NSObject, NSCoding  {
                 }
             }
         }
-        if !model.silent && model.dm.activationTrace {
-            for (chunk,activation) in conflictSet {
-                model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 2)
+        
+        if model.activationTrace {
+            if !model.batchMode {
+                for (chunk,activation) in conflictSet {
+                    model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 3)
+                }
+            } else {
+                for (chunk, activation) in conflictSet {
+                    model.addToActivationTrace(model.time - model.startTime, chunkName: chunk.name, activation: activation)
+                }
             }
         }
         if bestActivation > retrievalThreshold {
@@ -360,12 +367,7 @@ class Declarative: NSObject, NSCoding  {
                 bestActivation = activation
                 bestMatch = ch1
             }        
-        }
-        if !model.silent && model.dm.activationTrace {
-            for (chunk,activation) in conflictSet {
-                model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 2)
             }
-        }
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
         } else {
