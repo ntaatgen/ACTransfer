@@ -582,7 +582,7 @@ func reportMemory(content: [Factor], model: Model?) throws -> (result: Factor?, 
     else {
         return(Factor.Str("Error"), true)
     }
-}
+} 
 
 /* Put the contents of the imaginal buffer in the declarative memory
  */
