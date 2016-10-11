@@ -192,18 +192,22 @@ class BatchRun {
                                 self.mainModel.addToTraceField("Can't write datafile \(err)")
                             }
                             // Trace file
-                            do {
-                                try traceOutput.writeToURL(self.traceFileName, atomically: false, encoding: NSUTF8StringEncoding)
-                            } catch let error as NSError {
-                                err = error
+                            if self.model.batchTrace {
+                                do {
+                                    try traceOutput.writeToURL(self.traceFileName, atomically: false, encoding: NSUTF8StringEncoding)
+                                } catch let error as NSError {
+                                    err = error
                                 self.mainModel.addToTraceField("Can't write tracefile \(err)")
+                                }
                             }
                             // Activation trace file
-                            do {
-                                try traceOutput.writeToURL(self.activationTraceFileName, atomically: false, encoding: NSUTF8StringEncoding)
-                            } catch let error as NSError {
-                                err = error
+                            if self.model.activationTrace {
+                                do {
+                                    try activationTraceOutput.writeToURL(self.activationTraceFileName, atomically: false, encoding: NSUTF8StringEncoding)
+                                } catch let error as NSError {
+                                    err = error
                                 self.mainModel.addToTraceField("Can't write activation tracefile \(err)")
+                                }
                             }
                         }
                     }
