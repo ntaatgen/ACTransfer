@@ -675,9 +675,9 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
     
     var bestMatch = ["10", "10", 1000.0]
     for line in input {
-        let addend1 = line.substringWithRange(Range<String.Index>(start: line.startIndex, end: line.startIndex.advancedBy(1)))
-        let addend2 = line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(4), end: line.startIndex.advancedBy(5)))
-        let itemRating = Double(line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(6), end: line.endIndex)))
+        let addend1 = line.substringWithRange(Range<String.Index>(line.startIndex..<line.startIndex.advancedBy(1)))
+        let addend2 = line.substringWithRange(Range<String.Index>(line.startIndex.advancedBy(4)..<line.startIndex.advancedBy(5)))
+        let itemRating = Double(line.substringWithRange(Range<String.Index>(line.startIndex.advancedBy(6)..<line.endIndex)))
         
         var recent = 0
         switch content[1] {
@@ -719,14 +719,13 @@ func fixedProblems(content: [Factor], model:Model?) throws -> (result: Factor?, 
     } catch {
         throw RunTimeError.errorInFunction("Select Problem: File cannot be read")
     }
-    var output: [ScriptArray] = []
     
-    var line = input[content[0].intValue()!]
+    let line = input[content[0].intValue()!]
     var addend1 = ""
     var addend2 = ""
     if(line != "") {
-        addend1 = line.substringWithRange(Range<String.Index>(start: line.startIndex, end: line.startIndex.advancedBy(1)))
-        addend2 = line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(6), end: line.startIndex.advancedBy(7)))
+        addend1 = line.substringWithRange(Range<String.Index>(line.startIndex..<line.startIndex.advancedBy(1)))
+        addend2 = line.substringWithRange(Range<String.Index>(line.startIndex.advancedBy(6)..<line.startIndex.advancedBy(7)))
     }
     
     let outputFinal = ScriptArray(elements: [generateFactorExpression(Factor.Str(addend1)), generateFactorExpression(Factor.Str(addend2))])
