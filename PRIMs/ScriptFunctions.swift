@@ -42,6 +42,7 @@ let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done
     "set-references": setReferences,
     "select-problem": selectProblem,
     "update-rating": updateRating,
+    "fixed-problems": fixedProblems,
     ]
 
 
@@ -694,7 +695,27 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
  */
 func fixedProblems(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
     print("fixed")
-    return(nil, true)
+    let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/fixedOrder.txt"
+    
+    var input: [String] = [];
+    do {
+        let data = try String(contentsOfFile:filepath, encoding: NSUTF8StringEncoding)
+        input = data.componentsSeparatedByCharactersInSet(NSCharacterSet.newlineCharacterSet())
+    } catch {
+        throw RunTimeError.errorInFunction("Select Problem: File cannot be read")
+    }
+    var output: [ScriptArray] = []
+    
+    var line = input[content[0].intValue()!]
+    var addend1 = ""
+    var addend2 = ""
+    if(line != "") {
+        addend1 = line.substringWithRange(Range<String.Index>(start: line.startIndex, end: line.startIndex.advancedBy(1)))
+        addend2 = line.substringWithRange(Range<String.Index>(start: line.startIndex.advancedBy(6), end: line.startIndex.advancedBy(7)))
+    }
+   
+    let outputFinal = ScriptArray(elements: [generateFactorExpression(Factor.Str(addend1)), generateFactorExpression(Factor.Str(addend2))])
+    return(Factor.Arr(outputFinal), true)
 }
 
 /**
