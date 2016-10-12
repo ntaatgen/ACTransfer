@@ -305,7 +305,7 @@ class Declarative: NSObject, NSCoding  {
         if (Int(x.description) != nil && Int(y.description) != nil)  {
             let maxValue = max(Double(x.description)!, Double(y.description)!)
             let minValue = min(Double(x.description)!, Double(y.description)!)
-            let mismatch = 0 - (maxValue - minValue) / 10
+            let mismatch = (minValue - maxValue) / 10
             return mismatch >= -1 ? mismatch : -1
         } else {
             return -1

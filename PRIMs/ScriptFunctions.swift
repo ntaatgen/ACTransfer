@@ -709,7 +709,6 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
  Present items in a fixed math garden way
  */
 func fixedProblems(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
-    print("fixed")
     let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/fixedOrder.txt"
     
     var input: [String] = [];
