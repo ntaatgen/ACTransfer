@@ -43,6 +43,7 @@ let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done
     "select-problem": selectProblem,
     "update-rating": updateRating,
     "fixed-problems": fixedProblems,
+    "split-numbers": splitNumbers,
     ]
 
 
@@ -729,4 +730,30 @@ func fixedProblems(content: [Factor], model:Model?) throws -> (result: Factor?, 
     
     let outputFinal = ScriptArray(elements: [generateFactorExpression(Factor.Str(addend1)), generateFactorExpression(Factor.Str(addend2))])
     return(Factor.Arr(outputFinal), true)
+}
+
+
+/**
+ Split numbers in ones and tens
+ */
+func splitNumbers(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
+    var output: ScriptArray
+    if(content.count == 1 && Int(content[0].description) != nil) {
+        let numbers = String(content[0])
+        let array = numbers.utf8.map{Int($0)-48}
+        
+        if(array.count == 1) {
+            output = ScriptArray(elements: [generateFactorExpression(Factor.IntNumber(0)),
+                generateFactorExpression(Factor.IntNumber(array[0]))])
+        } else if(array.count == 2) {
+            output = ScriptArray(elements: [generateFactorExpression(Factor.IntNumber(array[0])),
+                generateFactorExpression(Factor.IntNumber(array[1]))])
+        } else {
+            throw RunTimeError.errorInFunction("The function split-numbers cannot split numbers with more than 3 digits")
+        }
+        
+    } else {
+        throw RunTimeError.errorInFunction("The function split-numbers requires one numerical argument")
+    }
+    return(Factor.Arr(output), true)
 }
