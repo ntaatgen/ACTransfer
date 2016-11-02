@@ -33,6 +33,7 @@ class Declarative: NSObject, NSCoding  {
     static let defaultActivationDefault: Double? = nil
     static let partialMatchingDefault = false
     static let newPartialMatchingDefault: Double? = nil
+    static let assocDefault = 10.0
     /// Baseleveldecay parameter (d in ACT-R)
     var baseLevelDecay: Double = baseLevelDecayDefault
     /// Optimized learning on or off
@@ -75,6 +76,8 @@ class Declarative: NSObject, NSCoding  {
     var retrievalReinforces = retrievalReinforcesDefault
     /// default Activation for chunks
     var defaultActivation = defaultActivationDefault
+    /// assoc Parameter for associative learning
+    var assoc = assocDefault
     
     /// Dictionary with all the chunks in DM, maps name onto Chunk
     var chunks = [String:Chunk]()

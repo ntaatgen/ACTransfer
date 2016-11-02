@@ -433,6 +433,8 @@ class Model: NSObject, NSCoding {
                 dm.newPartialMatchingPow = numVal!
             case "new-pm-exp:":
                 dm.newPartialMatchingPow = numVal!
+            case "assoc:":
+                dm.assoc = numVal!
             default: return false
             }
         }
