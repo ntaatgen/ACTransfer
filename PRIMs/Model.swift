@@ -372,6 +372,8 @@ class Model: NSObject, NSCoding {
             batchTrace = boolVal
         case "activation-trace:":
             activationTrace = boolVal
+        case "associative-learning:":
+            dm.associativeLearning = boolVal
         default:
             if (numVal == nil) {return false}
             switch parameter {
