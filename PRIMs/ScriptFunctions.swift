@@ -757,3 +757,31 @@ func splitNumbers(content: [Factor], model:Model?) throws -> (result: Factor?, d
     }
     return(Factor.Arr(output), true)
 }
+
+/**
+ Set Sji's for numbers
+ */
+//func numberSjis(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
+//    guard content.count == 3 else { throw RunTimeError.invalidNumberOfArguments}
+//    for (_,ch1) in model!.dm.chunks {
+//        for (_, ch2) in model!.dm.chunks {
+//            for (_,slotval1) in ch1.slotvals {
+//                for (_,slotval2) in ch2.slotvals {
+//                    if slotval2.description.containsString(slotval1.description) {
+//                        
+//                    }
+//                }
+//            }
+//        }
+//    }
+//}
+//
+//
+//guard content.count == 3 else { throw RunTimeError.invalidNumberOfArguments}
+//let chunk1 = model!.dm.chunks[content[0].description]
+//guard chunk1 != nil else { throw RunTimeError.errorInFunction("Chunk 1 does not exist") }
+//let chunk2 = model!.dm.chunks[content[1].description]
+//guard chunk2 != nil else { throw RunTimeError.errorInFunction("Chunk 2 does not exist") }
+//let assoc = content[2].doubleValue()
+//guard assoc != nil else { throw RunTimeError.nonNumberArgument }
+//chunk2!.assocs[chunk1!.name] = (assoc!, 0)

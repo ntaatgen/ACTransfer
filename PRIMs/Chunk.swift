@@ -260,6 +260,20 @@ class Chunk: NSObject, NSCoding {
         }
         return false
     }
+    
+    func frequencyInSlotOf(chunk: Chunk) -> Int {
+        var freq = 0
+        for (_,value) in chunk.slotvals {
+            switch value {
+            case .Symbol(let valChunk):
+                if valChunk.name==self.name {
+                    freq = freq + 1
+                }
+            default: break
+            }
+        }
+        return freq
+    }
 
     
     /**
@@ -295,6 +309,91 @@ class Chunk: NSObject, NSCoding {
     }
     
     /**
+    Posterior Strength Equation
+    */
+//    func posteriorStrength(source: Chunk) -> Double {
+//        var contextFrequency = 0
+//        source.appearsInSlotOf(model.buffers["input"])
+//        if  let bufferChunk = model.buffers["input"] { // The current context is only the input buffer, because that works for us
+//            for (_,value) in bufferChunk.slotvals {
+//                switch value {
+//                case .Symbol(let valchunk):
+//                    if valchunk == source.
+//                        contextFrequency += 1
+//                default:
+//                    break
+//                }
+//            }
+//        }
+//        model.dm.assoc +
+//        
+//        let prior = priorStrength(source)
+//        let assoc = 0
+//        let fcj = 0
+//        let empiricalS = 0
+//        
+//        return 0.0
+//    }
+//    
+    /**
+//    Prior Strength Equation
+//    */
+//    func priorStrength(source: Chunk) -> Double {
+//        let m = Double(model.dm.chunks.count)
+//        var n = 0.0
+//        for (_, ch) in model.dm.chunks {
+//            for (_, slot) in ch.slotvals {
+//                switch(slot) {
+//                case .Symbol(let slotval):
+//                    if source == slotval {
+//                        n = n + 1
+//                    }
+//                default:
+//                    break
+//                }
+//            }
+//        }
+//        if n == 0 {
+//            return 0.0
+//        } else {
+//            return (m / n)
+//        }
+//    }
+    
+    /**
+    Calculate the spreading activation for associative learning from a certain buffer
+    
+     - parameter bufferName: The name of the buffer - for now it only works for input
+     - parameter assoc: The value of the assoc parameter
+     - returns: The amount of spreading activation from this buffer
+    */
+    func alSpreadingFromBuffer(bufferName: String, assocValue: Double) -> Double {
+        if assocValue == 0 { return 0 }
+        var totalPosteriorSji = 0.0
+        var frequencies: [(value: String, freq: Int)] = []
+        if let bufferChunk = model.buffers[bufferName] {
+            for (_, val) in bufferChunk.slotvals {
+                let vals = frequencies.map{$0.value}
+                if !vals.contains(val.description) {
+                    frequencies.append((val.description, frequencyInSlotOf(bufferChunk)))
+                }
+            }
+        
+            for (_, freq) in frequencies {
+                let posteriorSji = log((assocValue + Double(freq) * sji(bufferChunk)) / (assocValue + Double(freq)))
+                totalPosteriorSji = totalPosteriorSji + posteriorSji
+            }
+        }
+        
+        print(self.name)
+        print(self.type)
+        print(spreadingFromBuffer("input", spreadingParameterValue: 1))
+        print(totalPosteriorSji)
+        print("\n")
+        return totalPosteriorSji
+    }
+    
+    /**
     Calculate the spreading of activation from a certain buffer
 
     - parameter bufferName: The name of the buffer
@@ -327,32 +426,36 @@ class Chunk: NSObject, NSCoding {
     /**
     Calculate spreading activation for the chunk from the goal
     
-    Can be calculated in two ways, either standard ACT-R's equation, or by making spreading dependent on the activation of the chunks in the goal slots
+    Can be calculated in three ways, either standard ACT-R's equation, or by making spreading dependent on the activation of the chunks in the goal slots, or by using associative learning.
     
     - returns: The amount of spreading activation
     */
     func spreadingActivation() -> Double {
         if creationTime == nil {return 0}
         var totalSpreading: Double = 0
-        if model.dm.goalSpreadingByActivation {
-            if let goal=model.buffers["goal"] {
-                for (_,value) in goal.slotvals {
-                    switch value {
-                    case .Symbol(let valchunk):
-                        totalSpreading += valchunk.sji(self) * max(0,valchunk.baseLevelActivation())
-                    default:
-                        break
+        if model.dm.associativeLearning && self.type != "operator" {
+            totalSpreading += alSpreadingFromBuffer("input", assocValue: model.dm.assoc)
+        } else {
+            if model.dm.goalSpreadingByActivation {
+                if let goal=model.buffers["goal"] {
+                    for (_,value) in goal.slotvals {
+                        switch value {
+                        case .Symbol(let valchunk):
+                            totalSpreading += valchunk.sji(self) * max(0,valchunk.baseLevelActivation())
+                        default:
+                            break
+                        }
                     }
                 }
+            } else {
+                totalSpreading += spreadingFromBuffer("goal", spreadingParameterValue: model.dm.goalActivation)
             }
-        } else {
-            totalSpreading += spreadingFromBuffer("goal", spreadingParameterValue: model.dm.goalActivation)
+            totalSpreading += spreadingFromBuffer("input", spreadingParameterValue: model.dm.inputActivation)
+            totalSpreading += spreadingFromBuffer("retrievalH", spreadingParameterValue: model.dm.retrievalActivation)
+            totalSpreading += spreadingFromBuffer("imaginal", spreadingParameterValue: model.dm.imaginalActivation)
+            //        let val = spreadingFromBuffer("imaginal", spreadingParameterValue: model.dm.imaginalActivation)
+            //        print("Spreading from imaginal to \(self.name) is \(val) \(model.dm.imaginalActivation)")
         }
-        totalSpreading += spreadingFromBuffer("input", spreadingParameterValue: model.dm.inputActivation)
-        totalSpreading += spreadingFromBuffer("retrievalH", spreadingParameterValue: model.dm.retrievalActivation)
-        totalSpreading += spreadingFromBuffer("imaginal", spreadingParameterValue: model.dm.imaginalActivation)
-//        let val = spreadingFromBuffer("imaginal", spreadingParameterValue: model.dm.imaginalActivation)
-//        print("Spreading from imaginal to \(self.name) is \(val) \(model.dm.imaginalActivation)")
         return totalSpreading
     }
     

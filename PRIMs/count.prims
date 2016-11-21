@@ -11,6 +11,8 @@ define task count {
   default-operator-self-assoc: 0.0
   egs: 0.05
   retrieval-reinforces: t
+  assoc: 10
+  associative-learning: t
 }
 
 define goal count {
