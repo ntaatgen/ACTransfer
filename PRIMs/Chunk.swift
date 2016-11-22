@@ -263,6 +263,9 @@ class Chunk: NSObject, NSCoding {
     
     func frequencyInSlotOf(chunk: Chunk) -> Int {
         var freq = 0
+        if(self.name == "mf18") {
+            print(chunk)
+        }
         for (_,value) in chunk.slotvals {
             switch value {
             case .Symbol(let valChunk):
@@ -270,6 +273,9 @@ class Chunk: NSObject, NSCoding {
                     freq = freq + 1
                 }
             default: break
+            }
+            if(self.name == "mf18") {
+                print(freq)
             }
         }
         return freq
@@ -362,6 +368,10 @@ class Chunk: NSObject, NSCoding {
     
     /**
     Calculate the spreading activation for associative learning from a certain buffer
+     
+     This is based on the functions used in ACT-R 4, see Lebiere (1999)
+     Instead of Rji we use the default Sji function of ACT-R 7 (Sji = S - ln(fanj))
+     The prior strength of association is 1.
     
      - parameter bufferName: The name of the buffer - for now it only works for input
      - parameter assoc: The value of the assoc parameter
@@ -370,26 +380,20 @@ class Chunk: NSObject, NSCoding {
     func alSpreadingFromBuffer(bufferName: String, assocValue: Double) -> Double {
         if assocValue == 0 { return 0 }
         var totalPosteriorSji = 0.0
-        var frequencies: [(value: String, freq: Int)] = []
+        var frequencies: [String:Int] = [:]
         if let bufferChunk = model.buffers[bufferName] {
+            
             for (_, val) in bufferChunk.slotvals {
-                let vals = frequencies.map{$0.value}
-                if !vals.contains(val.description) {
-                    frequencies.append((val.description, frequencyInSlotOf(bufferChunk)))
-                }
+                frequencies[val.description] = (frequencies[val.description] ?? 0) + 1
             }
-        
+            
             for (_, freq) in frequencies {
                 let posteriorSji = log((assocValue + Double(freq) * sji(bufferChunk)) / (assocValue + Double(freq)))
                 totalPosteriorSji = totalPosteriorSji + posteriorSji
             }
         }
-        
         print(self.name)
-        print(self.type)
-        print(spreadingFromBuffer("input", spreadingParameterValue: 1))
         print(totalPosteriorSji)
-        print("\n")
         return totalPosteriorSji
     }
     
@@ -455,6 +459,12 @@ class Chunk: NSObject, NSCoding {
             totalSpreading += spreadingFromBuffer("imaginal", spreadingParameterValue: model.dm.imaginalActivation)
             //        let val = spreadingFromBuffer("imaginal", spreadingParameterValue: model.dm.imaginalActivation)
             //        print("Spreading from imaginal to \(self.name) is \(val) \(model.dm.imaginalActivation)")
+        }
+        
+        if(self.name == "mf18"){
+            print(self.name)
+            print(totalSpreading)
+            print("\n")
         }
         return totalSpreading
     }
