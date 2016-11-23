@@ -74,7 +74,7 @@ class Chunk: NSObject, NSCoding {
         self.fixedActivation = fixedActivation == -1000.0 ? nil : fixedActivation
         self.referenceList = referenceList
         for (chunk,value) in assoc1 {
-            self.assocs[chunk] = Assocs(name: chunk, sji: value, unknown: assoc2[chunk]!)
+            self.assocs[chunk] = Assocs(name: chunk, sji: value, opLearning: assoc2[chunk]!)
         }
     
     }
@@ -97,7 +97,7 @@ class Chunk: NSObject, NSCoding {
         var assoc2: [String:Int] = [:]
         for (chunk, value) in assocs {
             assoc1[chunk] = value.sji
-            assoc2[chunk] = value.unknownValue
+            assoc2[chunk] = value.operatorLearning
         }
         coder.encodeObject(assoc1, forKey: "assoc1")
         coder.encodeObject(assoc2, forKey: "assoc2")
@@ -307,7 +307,7 @@ class Chunk: NSObject, NSCoding {
     */
     func sji(chunk: Chunk) -> Double {
         if let value = chunk.assocs[self.name] {
-            return calculateSji((value.sji, value.unknownValue))
+            return calculateSji((value.sji, value.operatorLearning))
         } else if self.appearsInSlotOf(chunk) {
             return model.dm.maximumAssociativeStrength - log(Double(self.fan))
         }
@@ -488,7 +488,7 @@ class Chunk: NSObject, NSCoding {
             if assocs[name] == nil {
                 assocs[name] = value
             } else {
-                assocs[name] = Assocs(name: name, sji: max(assocs[name]!.sji,value.sji), unknown: assocs[name]!.unknownValue + value.unknownValue)
+                assocs[name] = Assocs(name: name, sji: max(assocs[name]!.sji,value.sji), opLearning: assocs[name]!.operatorLearning + value.operatorLearning)
             }
         }
     }

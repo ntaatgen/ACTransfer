@@ -10,20 +10,20 @@
 class Assocs {
     let name: String
     var sji: Double
-    var unknownValue: Int
+    var operatorLearning: Int
     var frequency: Int
     
     init (s: String) {
         self.name = s
         self.sji = 0.0
-        self.unknownValue = 0
+        self.operatorLearning = 0
         self.frequency = 0
     }
     
-    init (name: String, sji: Double, unknown: Int) {
+    init (name: String, sji: Double, opLearning: Int) {
         self.name = name
         self.sji = sji
-        self.unknownValue = unknown
+        self.operatorLearning = opLearning
         self.frequency = 0
     }
 }

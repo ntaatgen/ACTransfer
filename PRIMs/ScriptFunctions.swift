@@ -473,7 +473,7 @@ func setSji(content: [Factor], model: Model?) throws -> (result: Factor?, done: 
     guard chunk2 != nil else { throw RunTimeError.errorInFunction("Chunk 2 does not exist") }
     let assoc = content[2].doubleValue()
     guard assoc != nil else { throw RunTimeError.nonNumberArgument }
-    chunk2!.assocs[chunk1!.name] = Assocs(name: chunk1!.name, sji: assoc!, unknown: 0)
+    chunk2!.assocs[chunk1!.name] = Assocs(name: chunk1!.name, sji: assoc!, opLearning: 0)
     return (nil, true)
 }
 
@@ -774,5 +774,6 @@ func splitNumbers(content: [Factor], model:Model?) throws -> (result: Factor?, d
 //            }
 //        }
 //    }
+//    return(nil, true)
 //}
 
