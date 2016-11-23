@@ -404,6 +404,7 @@ class Declarative: NSObject, NSCoding  {
                 }
             }
             model.buffers["retrievalH"] = retrieveResult!
+            updateFrequency()
         } else if !stuff  {
             if !model.silent {
                 model.addToTrace("Retrieval failure", level: 2)
@@ -417,5 +418,11 @@ class Declarative: NSObject, NSCoding  {
         return retrieveResult == nil && stuff ? 0.0 : latency
     }
     
+    func updateFrequency() {
+        // Update the F(Ni & Cj) between the retrieved chunk and the context
+        let contextj = model.buffers["input"]!
+        let neededi = model.buffers["retrievalH"]!
+        contextj.assocs[neededi.name]!.frequency = contextj.assocs[neededi.name]!.frequency + 1
+    }
 
 }
