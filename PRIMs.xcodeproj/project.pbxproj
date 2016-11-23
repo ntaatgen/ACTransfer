@@ -36,6 +36,7 @@
 		B8EEE60D1B01DDC6002EFAD6 /* PRScenario.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8EEE60C1B01DDC6002EFAD6 /* PRScenario.swift */; };
 		B8F00C061B009E810036FFE3 /* PRObject.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F00C051B009E810036FFE3 /* PRObject.swift */; };
 		B8F00C081B00A1D10036FFE3 /* PRScreen.swift in Sources */ = {isa = PBXBuildFile; fileRef = B8F00C071B00A1D10036FFE3 /* PRScreen.swift */; };
+		BB68B93F1DE58A4A0085BF6D /* Assocs.swift in Sources */ = {isa = PBXBuildFile; fileRef = BB68B93E1DE58A4A0085BF6D /* Assocs.swift */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXContainerItemProxy section */
@@ -100,6 +101,7 @@
 		B8EEE60C1B01DDC6002EFAD6 /* PRScenario.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PRScenario.swift; sourceTree = "<group>"; };
 		B8F00C051B009E810036FFE3 /* PRObject.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PRObject.swift; sourceTree = "<group>"; };
 		B8F00C071B00A1D10036FFE3 /* PRScreen.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PRScreen.swift; sourceTree = "<group>"; };
+		BB68B93E1DE58A4A0085BF6D /* Assocs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Assocs.swift; sourceTree = "<group>"; };
 /* End PBXFileReference section */
 
 /* Begin PBXFrameworksBuildPhase section */
@@ -192,6 +194,7 @@
 				B866FCB21B67BC010084EAAE /* Operator.swift */,
 				B8D18E0D1AEEC305007CF2B6 /* Imaginal.swift */,
 				B85FAA951AE10D7500C6F57A /* Chunk.swift */,
+				BB68B93E1DE58A4A0085BF6D /* Assocs.swift */,
 				B85FAA961AE10D7500C6F57A /* Production.swift */,
 				B85FAA971AE10D7500C6F57A /* Procedural.swift */,
 				B80397C41B15B4BF00935F9C /* Parser.swift */,
@@ -376,6 +379,7 @@
 				B85FAAA91AE10D7500C6F57A /* Support.swift in Sources */,
 				B8F00C061B009E810036FFE3 /* PRObject.swift in Sources */,
 				B8CE155E1B022A5300554F5F /* FruchtermanReingold.swift in Sources */,
+				BB68B93F1DE58A4A0085BF6D /* Assocs.swift in Sources */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};

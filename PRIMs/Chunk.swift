@@ -32,7 +32,7 @@ class Chunk: NSObject, NSCoding {
     /// Order in which the slots of the chunk are printed
     var printOrder: [String] = []
     /// Sji values
-    var assocs: [String:(Double,Int)] = [:] // Sji table
+    var assocs: [String:Assocs] = [:]// [String:(Double,Int,Int)] = [:] // Sji table - Name: (Sji, int?, F(Cj))
     /// Task number that refers to the file that the chunk was defined in
     var definedIn: [Int] = []
     
@@ -74,7 +74,7 @@ class Chunk: NSObject, NSCoding {
         self.fixedActivation = fixedActivation == -1000.0 ? nil : fixedActivation
         self.referenceList = referenceList
         for (chunk,value) in assoc1 {
-            self.assocs[chunk] = (value, assoc2[chunk]!)
+            self.assocs[chunk] = Assocs(name: chunk, sji: value, unknown: assoc2[chunk]!)
         }
     
     }
@@ -95,9 +95,9 @@ class Chunk: NSObject, NSCoding {
         coder.encodeDouble(fixedActivation ?? -1000.0, forKey: "fixedactivation")
         var assoc1: [String:Double] = [:]
         var assoc2: [String:Int] = [:]
-        for (chunk, (s1, s2)) in assocs {
-            assoc1[chunk] = s1
-            assoc2[chunk] = s2
+        for (chunk, value) in assocs {
+            assoc1[chunk] = value.sji
+            assoc2[chunk] = value.unknownValue
         }
         coder.encodeObject(assoc1, forKey: "assoc1")
         coder.encodeObject(assoc2, forKey: "assoc2")
@@ -307,7 +307,7 @@ class Chunk: NSObject, NSCoding {
     */
     func sji(chunk: Chunk) -> Double {
         if let value = chunk.assocs[self.name] {
-            return calculateSji(value)
+            return calculateSji((value.sji, value.unknownValue))
         } else if self.appearsInSlotOf(chunk) {
             return model.dm.maximumAssociativeStrength - log(Double(self.fan))
         }
@@ -488,7 +488,7 @@ class Chunk: NSObject, NSCoding {
             if assocs[name] == nil {
                 assocs[name] = value
             } else {
-                assocs[name] = (max(assocs[name]!.0,value.0), assocs[name]!.1 + value.1)
+                assocs[name] = Assocs(name: name, sji: max(assocs[name]!.sji,value.sji), unknown: assocs[name]!.unknownValue + value.unknownValue)
             }
         }
     }
