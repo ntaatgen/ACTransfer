@@ -315,6 +315,19 @@ class Chunk: NSObject, NSCoding {
     }
     
     /**
+     Retrieve the frequency F(Ni & Cj), how often has chunk i been retrieved with chunk j in the context
+     - parameter chunk: the chunk that the association is with
+     
+     - returns: the Sji value
+     */
+    func freqNiCj(chunk: Chunk) -> Int {
+        if let value = chunk.assocs[self.name] {
+            return value.frequency
+        }
+        return 0
+    }
+    
+    /**
     Posterior Strength Equation
     */
 //    func posteriorStrength(source: Chunk) -> Double {
@@ -378,22 +391,34 @@ class Chunk: NSObject, NSCoding {
      - returns: The amount of spreading activation from this buffer
     */
     func alSpreadingFromBuffer(bufferName: String, assocValue: Double) -> Double {
+        print("hoi")
         if assocValue == 0 { return 0 }
         var totalPosteriorSji = 0.0
-        var frequencies: [String:Int] = [:]
+        var totalSlots = 0
         if let bufferChunk = model.buffers[bufferName] {
-            
-            for (_, val) in bufferChunk.slotvals {
-                frequencies[val.description] = (frequencies[val.description] ?? 0) + 1
-            }
-            
-            for (_, freq) in frequencies {
-                let posteriorSji = log((assocValue + Double(freq) * sji(bufferChunk)) / (assocValue + Double(freq)))
-                totalPosteriorSji = totalPosteriorSji + posteriorSji
-            }
+//            print(bufferChunk.slotvals)
+//            print("hier")
+//            print(bufferChunk.slotvals["isa"]!)
+//            print("\n")
+//            if bufferChunk.slotvals["isa"]! == "fact" {
+                for (_,value) in bufferChunk.slotvals {
+                    print(value)
+                    switch value {
+                    case .Symbol(let valchunk):
+                        let posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * sji(valchunk)) / (assocValue + Double(freqNiCj(valchunk))))
+                        totalPosteriorSji += posteriorSji
+                        if valchunk.assocs[self.name] != nil {
+                            valchunk.assocs[self.name]!.posteriorSji = posteriorSji
+                            print("boe")
+                        }
+                        totalSlots += 1
+                    default:
+                        break
+                    }
+                }
+//            }
+        
         }
-        print(self.name)
-        print(totalPosteriorSji)
         return totalPosteriorSji
     }
     
@@ -461,11 +486,6 @@ class Chunk: NSObject, NSCoding {
             //        print("Spreading from imaginal to \(self.name) is \(val) \(model.dm.imaginalActivation)")
         }
         
-        if(self.name == "mf18"){
-            print(self.name)
-            print(totalSpreading)
-            print("\n")
-        }
         return totalSpreading
     }
     

@@ -422,7 +422,14 @@ class Declarative: NSObject, NSCoding  {
         // Update the F(Ni & Cj) between the retrieved chunk and the context
         let contextj = model.buffers["input"]!
         let neededi = model.buffers["retrievalH"]!
-        contextj.assocs[neededi.name]!.frequency = contextj.assocs[neededi.name]!.frequency + 1
+        print(contextj)
+        print(neededi)
+        print(contextj.assocs)
+        print(contextj.assocs[neededi.name])
+        if contextj.assocs[neededi.name] == nil {
+            contextj.assocs[neededi.name] = Assocs(s: neededi.name)
+        }
+        contextj.assocs[neededi.name]!.frequency += 1
     }
 
 }
