@@ -391,7 +391,7 @@ class Chunk: NSObject, NSCoding {
      - returns: The amount of spreading activation from this buffer
     */
     func alSpreadingFromBuffer(bufferName: String, assocValue: Double) -> Double {
-        print("hoi")
+//        print("hoi")
         if assocValue == 0 { return 0 }
         var totalPosteriorSji = 0.0
         var totalSlots = 0
@@ -400,23 +400,24 @@ class Chunk: NSObject, NSCoding {
 //            print("hier")
 //            print(bufferChunk.slotvals["isa"]!)
 //            print("\n")
-//            if bufferChunk.slotvals["isa"]! == "fact" {
+            let bc = bufferChunk.slotvals["isa"]!
+            if bc.description == "fact" {
                 for (_,value) in bufferChunk.slotvals {
-                    print(value)
+//                    print(value)
                     switch value {
                     case .Symbol(let valchunk):
                         let posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * sji(valchunk)) / (assocValue + Double(freqNiCj(valchunk))))
                         totalPosteriorSji += posteriorSji
                         if valchunk.assocs[self.name] != nil {
                             valchunk.assocs[self.name]!.posteriorSji = posteriorSji
-                            print("boe")
+//                            print("boe")
                         }
                         totalSlots += 1
                     default:
                         break
                     }
                 }
-//            }
+            }
         
         }
         return totalPosteriorSji
