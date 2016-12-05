@@ -474,13 +474,13 @@ class Parser  {
         m.operators.addOperator(chunk, conditions: conditions, actions: actions)
 
 //        if !m.dm.goalOperatorLearning  {
-            chunk.assocs[goalName] = Assocs(name: goalName, sji: m.dm.defaultOperatorAssoc, opLearning: 0)
+            chunk.assocs[goalName] = (m.dm.defaultOperatorAssoc, 0)
 //        }
-        chunk.assocs[chunk.name] = Assocs(name: chunk.name, sji: m.dm.defaultOperatorSelfAssoc, opLearning: 0)
+        chunk.assocs[chunk.name] = (m.dm.defaultOperatorSelfAssoc, 0)
         for (_,ch) in m.dm.chunks {
             if ch.type == "operator" && ch.assocs[goalName] != nil {
-                chunk.assocs[ch.name] = Assocs(name: ch.name, sji: m.dm.defaultInterOperatorAssoc, opLearning: 0)
-                ch.assocs[chunk.name] = Assocs(name: chunk.name, sji: m.dm.defaultInterOperatorAssoc, opLearning: 0)
+                chunk.assocs[ch.name] = (m.dm.defaultInterOperatorAssoc, 0)
+                ch.assocs[chunk.name] = (m.dm.defaultInterOperatorAssoc, 0)
             }
         }
         chunk.definedIn = [taskNumber]
@@ -747,7 +747,7 @@ class Parser  {
                 m.addToTraceField("Chunk \(iChunkName!) is not defined.")
                 return false
             }
-            m.dm.chunks[iChunkName!]!.assocs[jChunkName!] = Assocs(name: jChunkName!, sji: assocValue!, opLearning: 0)
+            m.dm.chunks[iChunkName!]!.assocs[jChunkName!] = (assocValue!, 0)
             if !scanner.scanString(")", intoString: nil) {
                 m.addToTraceField("Missing ')' in Sji definition.")
             }

@@ -105,22 +105,24 @@ class Operator {
     
     - parameter payoff: The payoff that will be distributed
     */
-    func updateOperatorSjis(payoff: Double) {
+    func updateOperatorSjis(payoff: Double, time: Double?) {
         if !model.dm.goalOperatorLearning || model.reward == 0.0 { return } // only do this when switched on
         let goalChunk = model.formerBuffers["goal"]?.slotvals["slot1"]?.chunk() // take formerBuffers goal, because goal may have been replace by stop or nil
         if goalChunk == nil { return }
         for (operatorChunk,operatorTime) in previousOperators {
-            let opReward = model.dm.defaultOperatorAssoc * (payoff - (model.time - operatorTime)) / model.reward
-            if operatorChunk.assocs[goalChunk!.name] == nil {
-                operatorChunk.assocs[goalChunk!.name] = Assocs(name: goalChunk!.name, sji: 0.0, opLearning: 0)
-            }
-            operatorChunk.assocs[goalChunk!.name]!.sji += model.dm.beta * (opReward - operatorChunk.assocs[goalChunk!.name]!.sji)
-            operatorChunk.assocs[goalChunk!.name]!.operatorLearning += 1
-            if opReward > 0 {
-                operatorChunk.addReference() // Also increase baselevel activation of the operator
-            }
-            if !model.silent {
-                model.addToTrace("Updating assoc between \(goalChunk!.name) and \(operatorChunk.name) to \(operatorChunk.assocs[goalChunk!.name]!)", level: 5)
+            if time != nil && operatorTime < time {
+                let opReward = model.dm.defaultOperatorAssoc * (payoff - (model.time - operatorTime)) / model.reward
+                if operatorChunk.assocs[goalChunk!.name] == nil {
+                    operatorChunk.assocs[goalChunk!.name] = (0.0, 0)
+                }
+                operatorChunk.assocs[goalChunk!.name]!.0 += model.dm.beta * (opReward - operatorChunk.assocs[goalChunk!.name]!.0)
+                operatorChunk.assocs[goalChunk!.name]!.1 += 1
+                if opReward > 0 {
+                    operatorChunk.addReference() // Also increase baselevel activation of the operator
+                }
+                if !model.silent {
+                    model.addToTrace("Updating assoc between \(goalChunk!.name) and \(operatorChunk.name) to \(operatorChunk.assocs[goalChunk!.name]!)", level: 5)
+                }
             }
         }
     }

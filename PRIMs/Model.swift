@@ -65,10 +65,6 @@ class Model: NSObject, NSCoding {
     /// Reward used for operator-goal association learning. Also determines maximum run time. Switched off when set to 0.0 (default)
     var reward: Double = rewardDefault
     let silent: Bool
-    // Activition Trace
-    var activationTraceData: [(Double, String, Double)] = []
-    var activationTrace: Bool = false
-    
     
 //    struct Results {
         var modelResults: [[(Double,Double)]] = []
@@ -113,6 +109,7 @@ class Model: NSObject, NSCoding {
         trace = []
         self.silent = silent
         self.batchMode = batchMode
+     
     }
     
     required convenience init?(coder aDecoder: NSCoder) {
@@ -236,19 +233,11 @@ class Model: NSObject, NSCoding {
     }
     
     /* Add to batch trace
-     * Input parameters: timestamp (double), type (string) and addToTrace (string)
+     * Input parameters: timestamp (double) and addToTrace (string)
      * No return parameter
      */
     func addToBatchTrace(timestamp: Double, type: String, addToTrace: String) {
         batchTraceData += [(timestamp, type, addToTrace)]
-    }
-    
-    /* Add to activation trace
-     * Input parameters: timestamp (double) and chunkname (string), chunk activation (double)
-     * No return parameter
-     */
-    func addToActivationTrace(timestamp: Double, chunkName: String, activation: Double) {
-        activationTraceData += [(timestamp, chunkName, activation)]
     }
     
 //    func buffersToText() -> String {
@@ -370,10 +359,10 @@ class Model: NSObject, NSCoding {
             dm.partialMatching = boolVal
         case "batch-trace:":
             batchTrace = boolVal
-        case "activation-trace:":
-            activationTrace = boolVal
-        case "associative-learning:":
-            dm.associativeLearning = boolVal
+        //case "batch-trace":
+        //    if batchMode {
+        //        batchTrace = true
+        //    }
         default:
             if (numVal == nil) {return false}
             switch parameter {
@@ -435,8 +424,6 @@ class Model: NSObject, NSCoding {
                 dm.newPartialMatchingPow = numVal!
             case "new-pm-exp:":
                 dm.newPartialMatchingPow = numVal!
-            case "assoc:":
-                dm.assoc = numVal!
             default: return false
             }
         }
@@ -550,7 +537,7 @@ class Model: NSObject, NSCoding {
                     running = false
                     fallingThrough = true
                     //                    procedural.issueReward(0.0)
-                    operators.updateOperatorSjis(0.0)
+                    operators.updateOperatorSjis(0.0, time: nil)
                     let dl = DataLine(eventType: "trial-end", eventParameter1: "fail", eventParameter2: "void", eventParameter3: "void", inputParameters: scenario.inputMappingForTrace, time: time - startTime)
                     outputData.append(dl)
                     return
@@ -613,7 +600,7 @@ class Model: NSObject, NSCoding {
                 if scenario.nextEventTime == nil {
                     running = false
 //                    procedural.issueReward(0.0)
-                    operators.updateOperatorSjis(0.0)
+                    operators.updateOperatorSjis(0.0, time: nil)
                     let dl = DataLine(eventType: "trial-end", eventParameter1: "fail", eventParameter2: "void", eventParameter3: "void", inputParameters: scenario.inputMappingForTrace, time: time - startTime)
                     outputData.append(dl)
                     return
@@ -656,7 +643,7 @@ class Model: NSObject, NSCoding {
         // We are done if the current action is the goal action, or there is no goal action and slot1 in the goal is set to stop
         if testGoalAction() || (scenario.goalAction.isEmpty && buffers["goal"]?.slotvals["slot1"] != nil && buffers["goal"]!.slotvals["slot1"]!.description == "stop")  {
 //            procedural.issueReward(40.0)
-            operators.updateOperatorSjis(reward)
+            operators.updateOperatorSjis(reward, time: nil)
             if let imaginalChunk = buffers["imaginal"] {
                 dm.addToDM(imaginalChunk)
             }
@@ -669,7 +656,7 @@ class Model: NSObject, NSCoding {
             let maxTime = reward == 0.0 ? timeThreshold : reward
             if time - startTime > maxTime || (buffers["goal"]?.slotvals["slot1"] != nil && buffers["goal"]!.slotvals["slot1"]!.description == "stop") {
 //                procedural.issueReward(0.0)
-                operators.updateOperatorSjis(0.0)
+                operators.updateOperatorSjis(0.0, time: nil)
                 running = false
                 resultAdd(time - startTime)
                 let dl = DataLine(eventType: "trial-end", eventParameter1: "fail", eventParameter2: "void", eventParameter3: "void", inputParameters: scenario.inputMappingForTrace, time: time - startTime)
