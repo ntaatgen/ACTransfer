@@ -500,9 +500,17 @@ class Chunk: NSObject, NSCoding {
     
     func activation() -> Double {
         if creationTime == nil {return 0}
-        return  self.baseLevelActivation()
-            + self.spreadingActivation() + calculateNoise()
-    }
+        //if self.model.dm.associativeLearning {
+            //if self.fixedActivation != nil {
+            //    return self.fixedActivation! + self.spreadingActivation() + calculateNoise()
+            //} else {
+         //       return 1.0 + self.spreadingActivation() + calculateNoise()
+            //}
+        //} else {
+            return  self.baseLevelActivation()
+                + self.spreadingActivation() + calculateNoise()
+        //}
+    }    
     
     func mergeAssocs(newchunk: Chunk) {
         for (name,value) in newchunk.assocs {

@@ -761,19 +761,18 @@ func splitNumbers(content: [Factor], model:Model?) throws -> (result: Factor?, d
 /**
  Set Sji's for numbers
  */
-//func numberSjis(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
-//    guard content.count == 3 else { throw RunTimeError.invalidNumberOfArguments}
-//    for (_,ch1) in model!.dm.chunks {
-//        for (_, ch2) in model!.dm.chunks {
-//            for (_,slotval1) in ch1.slotvals {
-//                for (_,slotval2) in ch2.slotvals {
-//                    if slotval2.description.containsString(slotval1.description) {
-//                        
-//                    }
-//                }
-//            }
-//        }
-//    }
-//    return(nil, true)
-//}
+func numberSjis(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
+    guard content.count == 3 else { throw RunTimeError.invalidNumberOfArguments}
+    for (_,ch1) in model!.dm.chunks {
+        for (_,slotval1) in ch1.slotvals {
+        
+                    if slotval2.description.containsString(slotval1.description) {
+                        
+                    }
+                }
+            }
+        }
+    }
+    return(nil, true)
+}
 
