@@ -359,6 +359,8 @@ class Model: NSObject, NSCoding {
             dm.partialMatching = boolVal
         case "batch-trace:":
             batchTrace = boolVal
+        case "associative-learning:":
+            dm.associativeLearning = boolVal
         //case "batch-trace":
         //    if batchMode {
         //        batchTrace = true
@@ -423,7 +425,7 @@ class Model: NSObject, NSCoding {
             case "new-pm-pow:":
                 dm.newPartialMatchingPow = numVal!
             case "new-pm-exp:":
-                dm.newPartialMatchingPow = numVal!
+                dm.newPartialMatchingPow = numVal!            
             default: return false
             }
         }
