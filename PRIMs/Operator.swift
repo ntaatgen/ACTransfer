@@ -113,10 +113,10 @@ class Operator {
             if time != nil && operatorTime < time {
                 let opReward = model.dm.defaultOperatorAssoc * (payoff - (model.time - operatorTime)) / model.reward
                 if operatorChunk.assocs[goalChunk!.name] == nil {
-                    operatorChunk.assocs[goalChunk!.name] = (0.0, 0)
+                    operatorChunk.assocs[goalChunk!.name] = Assocs(name: goalChunk!.name, sji: 0.0, opLearning: 0)
                 }
-                operatorChunk.assocs[goalChunk!.name]!.0 += model.dm.beta * (opReward - operatorChunk.assocs[goalChunk!.name]!.0)
-                operatorChunk.assocs[goalChunk!.name]!.1 += 1
+                operatorChunk.assocs[goalChunk!.name]!.sji += model.dm.beta * (opReward - operatorChunk.assocs[goalChunk!.name]!.sji)
+                operatorChunk.assocs[goalChunk!.name]!.operatorLearning += 1
                 if opReward > 0 {
                     operatorChunk.addReference() // Also increase baselevel activation of the operator
                 }
