@@ -391,26 +391,19 @@ class Chunk: NSObject, NSCoding {
      - returns: The amount of spreading activation from this buffer
     */
     func alSpreadingFromBuffer(bufferName: String, assocValue: Double) -> Double {
-//        print("hoi")
         if assocValue == 0 { return 0 }
         var totalPosteriorSji = 0.0
         var totalSlots = 0
         if let bufferChunk = model.buffers[bufferName] {
-//            print(bufferChunk.slotvals)
-//            print("hier")
-//            print(bufferChunk.slotvals["isa"]!)
-//            print("\n")
             let bc = bufferChunk.slotvals["isa"]!
             if bc.description == "fact" {
                 for (_,value) in bufferChunk.slotvals {
-//                    print(value)
                     switch value {
                     case .Symbol(let valchunk):
                         let posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * sji(valchunk)) / (assocValue + Double(freqNiCj(valchunk))))
                         totalPosteriorSji += posteriorSji
                         if valchunk.assocs[self.name] != nil {
                             valchunk.assocs[self.name]!.posteriorSji = posteriorSji
-//                            print("boe")
                         }
                         totalSlots += 1
                     default:
@@ -500,16 +493,16 @@ class Chunk: NSObject, NSCoding {
     
     func activation() -> Double {
         if creationTime == nil {return 0}
-        //if self.model.dm.associativeLearning {
-            //if self.fixedActivation != nil {
-            //    return self.fixedActivation! + self.spreadingActivation() + calculateNoise()
-            //} else {
-         //       return 1.0 + self.spreadingActivation() + calculateNoise()
-            //}
-        //} else {
+            if self.model.dm.associativeLearning {
+                if self.fixedActivation != nil {
+                    return self.fixedActivation! + self.spreadingActivation() + calculateNoise()
+                } else {
+                    return 1.0 + self.spreadingActivation() + calculateNoise()
+            }
+        } else {
             return  self.baseLevelActivation()
                 + self.spreadingActivation() + calculateNoise()
-        //}
+        }
     }    
     
     func mergeAssocs(newchunk: Chunk) {
