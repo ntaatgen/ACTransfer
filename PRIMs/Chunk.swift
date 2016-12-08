@@ -314,6 +314,15 @@ class Chunk: NSObject, NSCoding {
         return 0.0
     }
     
+    func sjiWithoutLog(chunk: Chunk) -> Double {
+        if let value = chunk.assocs[self.name] {
+            return calculateSji((value.sji, value.operatorLearning))
+        } else if self.appearsInSlotOf(chunk) {
+            return exp(model.dm.maximumAssociativeStrength) / Double(self.fan)
+        }
+        return 0.0
+    }
+    
     /**
      Retrieve the frequency F(Ni & Cj), how often has chunk i been retrieved with chunk j in the context
      - parameter chunk: the chunk that the association is with
@@ -400,7 +409,7 @@ class Chunk: NSObject, NSCoding {
                 for (_,value) in bufferChunk.slotvals {
                     switch value {
                     case .Symbol(let valchunk):
-                        let posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * sji(valchunk)) / (assocValue + Double(freqNiCj(valchunk))))
+                        let posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * sjiWithoutLog(valchunk)) / (assocValue + Double(freqNiCj(valchunk))))
                         totalPosteriorSji += posteriorSji
                         if valchunk.assocs[self.name] != nil {
                             valchunk.assocs[self.name]!.posteriorSji = posteriorSji
