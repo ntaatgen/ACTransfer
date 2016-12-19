@@ -34,17 +34,21 @@ class BatchRun {
 
     
     func runScript() {
+        print("TRUDY")
         mainModel.clearTrace()
         dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0)) { () -> Void in
 
         var scanner = NSScanner(string: self.batchScript)
         let whiteSpaceAndNL = NSMutableCharacterSet.whitespaceAndNewlineCharacterSet()
-        _ = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
+        let trudy = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
+            print(trudy)
         let numberOfRepeats = scanner.scanInt()
+        print(numberOfRepeats)
         if numberOfRepeats == nil {
             self.mainModel.addToTraceField("Illegal number of repeats")
             return
         }
+        print(numberOfRepeats)
         var newfile = true
         for i in 0..<numberOfRepeats! {
             self.mainModel.addToTraceField("Run #\(i + 1)")
@@ -55,6 +59,7 @@ class BatchRun {
             
             while let command = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL) {
                 var stopByTime = false
+                print(command)
                 switch command {
                 case "run-time":
                     stopByTime = true

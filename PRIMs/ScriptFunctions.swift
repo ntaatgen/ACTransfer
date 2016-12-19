@@ -651,7 +651,7 @@ func updateRating(content: [Factor], model: Model?) throws -> (result: Factor?, 
     Second argument: list of last 10 problems
     */
 func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
-    let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/CurrentModel/Models/10-parameterSweepPartialMatchingOnly/itemratings.txt"
+    let filepath = "/Users/trudybuwalda/Desktop/itemratings.txt"
 
     var input: [String] = [];
     do {
@@ -713,7 +713,7 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
  Present items in a fixed math garden way
  */
 func fixedProblems(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
-    let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/fixedOrder.txt"
+    let filepath = "/Users/trudybuwalda/Desktop/fixedOrder.txt"
     var input: [String] = [];
     do {
         let data = try String(contentsOfFile:filepath, encoding: NSUTF8StringEncoding)

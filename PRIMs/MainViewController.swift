@@ -627,39 +627,49 @@ class MainViewController: NSViewController,NSTableViewDataSource,NSTableViewDele
     @IBOutlet weak var batchProgressBar: NSProgressIndicator!
     
     var batchRunner: BatchRun? = nil
-    
+   
     @IBAction func runBatch(sender: NSButton) {
-        let fileDialog: NSOpenPanel = NSOpenPanel()
-        fileDialog.title = "Select batch script file"
-        fileDialog.prompt = "Select"
-        fileDialog.worksWhenModal = true
-        fileDialog.allowsMultipleSelection = false
-        fileDialog.resolvesAliases = true
-        fileDialog.allowedFileTypes = ["bprims"]
-        let result = fileDialog.runModal()
-        if result != NSFileHandlingPanelOKButton { return }
+//        let fileDialog: NSOpenPanel = NSOpenPanel()
+//        fileDialog.title = "Select batch script file"
+//        fileDialog.prompt = "Select"
+//        fileDialog.worksWhenModal = true
+//        fileDialog.allowsMultipleSelection = false
+//        fileDialog.resolvesAliases = true
+//        fileDialog.allowedFileTypes = ["bprims"]
+//        let result = fileDialog.runModal()
+//        if result != NSFileHandlingPanelOKButton { return }
         var batchScript: String
         var directory: NSURL?
-        if let filePath = fileDialog.URL {
-            let tmp = try? String(contentsOfURL: filePath, encoding: NSUTF8StringEncoding)
-            directory = filePath.URLByDeletingLastPathComponent
+        //if let filePath = fileDialog.URL {
+        print(Process.arguments[2])
+        print(Process.arguments[3])
+        let filePath = NSURL(string: Process.arguments[2])!
+        
+        print(filePath)
+        var tmp = try? String(contentsOfURL: filePath, encoding: NSUTF8StringEncoding)
+        print(tmp)
+        
+        directory = filePath.URLByDeletingLastPathComponent
+        print(directory)
             if tmp == nil { return }
             batchScript = tmp!
-        } else { return }
-        let saveDialog = NSSavePanel()
-        saveDialog.title = "Enter the name of the outputfile"
-        saveDialog.prompt = "Save"
-        saveDialog.worksWhenModal = true
-        saveDialog.allowsOtherFileTypes = false
-        saveDialog.allowedFileTypes = ["dat","txt"]
-        let name = fileDialog.URL!.URLByDeletingPathExtension!.lastPathComponent!
-        saveDialog.nameFieldStringValue = name + ".dat"
-        let saveResult = saveDialog.runModal()
-        if saveResult != NSFileHandlingPanelOKButton { return }
-        if saveDialog.URL == nil { return }
+        print(batchScript)
+//        } else { return }
+//        let saveDialog = NSSavePanel()
+//        saveDialog.title = "Enter the name of the outputfile"
+//        saveDialog.prompt = "Save"
+//        saveDialog.worksWhenModal = true
+//        saveDialog.allowsOtherFileTypes = false
+//        saveDialog.allowedFileTypes = ["dat","txt"]
+//        let name = filePath!.URLByDeletingPathExtension!.lastPathComponent!
+//        saveDialog.nameFieldStringValue = name + ".dat"
+//        let saveResult = saveDialog.runModal()
+//        if saveResult != NSFileHandlingPanelOKButton { return }
+//        if saveDialog.URL == nil { return }
 //        print("Loading script \(fileDialog.URL!) to output to \(saveDialog.URL!)")
-        batchRunner = BatchRun(script: batchScript, mainModel: model, outputFile: saveDialog.URL!, controller: self, directory: directory!)
+        batchRunner = BatchRun(script: batchScript, mainModel: model, outputFile: NSURL(string: Process.arguments[3])!, controller: self, directory: directory!)
 //        model.tracing = false
+        print(batchRunner)
         batchProgressBar.doubleValue = 0
         batchProgressBar.hidden = false
         outputText.hidden = true
@@ -720,6 +730,9 @@ class MainViewController: NSViewController,NSTableViewDataSource,NSTableViewDele
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.updateProgressBar), name: "progress", object: nil)
         NSNotificationCenter.defaultCenter().addObserver(self, selector: #selector(MainViewController.respondToOpenFile(_:)), name: "openFile", object: nil)
         
+        if Process.arguments[1] == "Holiday" {
+            runBatch(allLabelsButton)
+        }
     }
 
     override var representedObject: AnyObject? {

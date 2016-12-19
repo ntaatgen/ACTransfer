@@ -423,15 +423,35 @@ class Declarative: NSObject, NSCoding  {
         // Update the F(Ni & Cj) between the retrieved chunk and the context
         let contextj = model.buffers["input"]!
         let neededi = model.buffers["retrievalH"]!
-//        print(contextj)
-//        print(neededi)
-//        print(contextj.assocs)
-//        print(contextj.assocs[neededi.name])
         if contextj.assocs[neededi.name] == nil {
             contextj.assocs[neededi.name] = Assocs(s: neededi.name)
         }
         contextj.assocs[neededi.name]!.frequency += 1
+        
+        // Write to file
+        let output = contextj.name + " " + neededi.name + " " + "\(contextj.assocs[neededi.name]!.frequency)" + "\n"
+
+        
+        let file = NSURL(string: "/Users/trudybuwalda/Desktop/assocs.dat")
+        
+        do {
+            let fileHandle = try NSFileHandle(forWritingToURL: file!)
+            fileHandle.seekToEndOfFile()
+            let data = output.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+            fileHandle.writeData(data!)
+            fileHandle.closeFile()
+        } catch let error as NSError {
+            let err = error
+            print(err)
+        }
+
+        
+//        do {
+//            try output.writeToURL(file!, atomically: false, encoding: NSUTF8StringEncoding)
+//        } catch _ as NSError {
+//            print("hoi")
+//        }
+
     }
 
-    
 }
