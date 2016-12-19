@@ -29,6 +29,8 @@ class Assocs {
         self.frequency = 0
         self.posteriorSji = 0.0
     }
+    
+    
 }
 
 

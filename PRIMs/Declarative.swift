@@ -368,6 +368,7 @@ class Declarative: NSObject, NSCoding  {
                 bestMatch = ch1
             }        
             }
+        
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
         } else {
@@ -432,4 +433,5 @@ class Declarative: NSObject, NSCoding  {
         contextj.assocs[neededi.name]!.frequency += 1
     }
 
+    
 }
