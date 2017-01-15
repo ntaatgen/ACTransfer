@@ -79,6 +79,16 @@ enum Value: CustomStringConvertible {
         return v.description == self.description
     }
     
+    var type: String {
+        get {
+            switch self {
+            case .symbol: return "symbol"
+            case .Number: return "number"
+            case .Text: return "text"
+            }
+        }
+    }
+    
     var description: String {
         get {
             switch self {

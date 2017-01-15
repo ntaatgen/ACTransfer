@@ -66,21 +66,13 @@ class Operator {
     /**
     Add conditions and actions to an operator while trying to optimize the order of the PRIMs to maximize overlap with existing operators 
     */
-    func addOperator(_ op: Chunk, conditions: [String], actions: [String]) {
-        var bestConditionMatch: [String] = []
-        var bestConditionNumber: Int = -1
-        var bestConditionActivation: Double = -1000
+    func addOperator(_ op: Chunk, conditions: Chunk, actions: [String]) {
+
         var bestActionMatch: [String] = []
         var bestActionNumber: Int = -1
         var bestActionActivation: Double = -1000
-        for (chunkName, chunkConditions, chunkActions) in model.dm.operatorCA {
+        for (chunkName, chunkActions) in model.dm.operatorCA {
             if let chunkActivation = model.dm.chunks[chunkName]?.baseLevelActivation() {
-                let conditionOverlap = determineOverlap(chunkConditions, newList: conditions)
-                if (conditionOverlap > bestConditionNumber) || (conditionOverlap == bestConditionNumber && chunkActivation > bestConditionActivation) {
-                    bestConditionMatch = chunkConditions
-                    bestConditionNumber = conditionOverlap
-                    bestConditionActivation = chunkActivation
-                }
                 let actionOverlap = determineOverlap(chunkActions, newList: actions)
                 if (actionOverlap > bestActionNumber) || (actionOverlap == bestActionNumber && chunkActivation > bestActionActivation) {
                     bestActionMatch = chunkActions
@@ -89,11 +81,10 @@ class Operator {
                 }
             }
         }
-        let (conditionString, conditionList) = constructList(bestConditionMatch, source: conditions, overlap: bestConditionNumber)
         let (actionString, actionList) = constructList(bestActionMatch, source: actions, overlap: bestActionNumber)
-        op.setSlot("condition", value: conditionString)
+        op.setSlot("condition", value: conditions)
         op.setSlot("action", value: actionString)
-        model.dm.operatorCA.append((op.name, conditionList, actionList))
+        model.dm.operatorCA.append((op.name, actionList))
     }
     
     
@@ -124,6 +115,128 @@ class Operator {
             }
         }
     }
+ 
+    /**
+    Create a single chunk out of the contents of the goal, retrieval, input and imaginal buffer
+    */
+    func buffersToChunk() -> Chunk {
+        let chunk = Chunk(s: model.generateName("instance"), m: model)
+        for (buffer, bufferString) in [("goal","G"),("retrievalH","RT"),("imaginal","WM"),("input","V")] {
+            if model.buffers[buffer] != nil {
+                for (slot, value) in model.buffers[buffer]!.slotvals {
+                    if slot.hasPrefix("slot") {
+                        let newSlotName = bufferString + slot.substring(from: slot.characters.index(slot.startIndex, offsetBy: 4))
+                        chunk.setSlot(newSlotName, value: value)
+                    }
+                }
+            }
+        }
+        return chunk
+    }
+    
+    /**
+    Calculate how well the operator matches the current state
+ 
+    - parameter op: The operator to be matched
+    - parameter bufferChunk: A chunk made of all the relevant buffers
+    - returns: The match score
+    */
+    func matchScore(op: Chunk, bufferChunk: Chunk) -> Double {
+        var score = 0.0
+        let conditionChunk = op.slotValue("condition")!.chunk()!
+        var slotList: [String] = [] // List of all the slots
+        var allValues: [Chunk:[String]] = [:]
+        for (slot,value) in conditionChunk.slotvals {
+            slotList.append(slot)
+            if value.type == "symbol" {
+                var slots = allValues[value.chunk()!]
+                if slots == nil {
+                    allValues[value.chunk()!] = [slot]
+                } else {
+                    slots!.append(slot)
+                    allValues[value.chunk()!] = slots!
+                }
+             }
+        }
+        for (slot,_) in bufferChunk.slotvals {
+            if !slotList.contains(slot) {
+                slotList.append(slot)
+            }
+        }
+        for slot in slotList {
+            let bufferValue = bufferChunk.slotvals[slot] ?? Value.Text("nil")
+            let operatorValue = conditionChunk.slotvals[slot] ?? Value.Text("nil")
+            if !(bufferValue.description == "nil" && operatorValue.description == "nil") {
+                if bufferValue.isEqual(operatorValue) {
+                    score += 1.0
+                }
+                if bufferValue.type != operatorValue.type || bufferValue.description == "nil" || operatorValue.description == "nil"  {
+                    score -= 3.0
+                }
+            }
+        }
+        
+        // Now look for patterns. In particular we look at repeated values (chunks) in the example
+        // We have already collected duplicate values in repreatedValues
+        for (_, slots) in allValues {
+            if slots.count > 1 {
+                print("Checking pattern in \(op.name)")
+                var patternFound = true
+                for slot in slots {
+                    if bufferChunk.slotvals[slot] == nil || bufferChunk.slotvals[slot]!.type != "symbol" {
+                        patternFound = false
+                        print("Slot \(slot) does not contain a chunk")
+                    }
+                }
+                if patternFound {
+                    let idChunk = bufferChunk.slotvals[slots[0]]!.chunk()!
+                    for (slot,value) in bufferChunk.slotvals {
+                        if patternFound {
+                            if slots.contains(slot) {
+                                patternFound = value.chunk()! == idChunk
+                                print("Check of slot \(slot) is \(patternFound)")
+                            } else {
+                                patternFound = value.type != "symbol" || value.chunk()! != idChunk
+                                print("Neg Check of slot \(slot) is \(patternFound)")
+                            }
+                        }
+                    }
+                }
+                score += patternFound ? 5.0 : -1.0
+            }
+        }
+        
+        return score
+    }
+    
+    /**
+     Retrieve an operator
+     */
+    func retrieveOperator() -> (Double, Chunk?) {
+        var bestMatch: Chunk? = nil
+        var bestMatchScore: Double = -100
+        let bufferChunk = buffersToChunk()
+        print("Checking operators for state \(bufferChunk)")
+        model.dm.retrieveError = false
+        model.dm.conflictSet = []
+        for (_,ch1) in model.dm.chunks {
+            if (ch1.type == "operator") &&  !model.dm.finsts.contains(ch1.name) {
+                let matchS = matchScore(op: ch1, bufferChunk: bufferChunk)
+                if matchS > bestMatchScore {
+                    bestMatchScore = matchS
+                    bestMatch = ch1
+                }
+                model.dm.conflictSet.append((ch1, matchS))
+            }
+        }
+        if bestMatch != nil {
+            return (0.05, bestMatch)
+        } else {
+            model.dm.retrieveError = true
+            return (model.dm.latency(model.dm.retrievalThreshold), nil)
+            
+        }
+    }
     
     
     /**
@@ -134,8 +247,8 @@ class Operator {
     func findOperator() -> Bool {
         let retrievalRQ = Chunk(s: "operator", m: model)
         retrievalRQ.setSlot("isa", value: "operator")
-        var (latency,opRetrieved) = model.dm.retrieve(retrievalRQ)
-            var cfs = model.dm.conflictSet.sorted(by: { (item1, item2) -> Bool in
+        var (latency,opRetrieved) = model.dm.retrieve(chunk: retrievalRQ)
+            let cfs = model.dm.conflictSet.sorted(by: { (item1, item2) -> Bool in
                 let (_,u1) = item1
                 let (_,u2) = item2
                 return u1 > u2
@@ -147,46 +260,13 @@ class Operator {
                 model.addToTrace(outputString, level: 5)
             }
         }
-        var match = false
-        var candidate: Chunk = Chunk(s: "empty", m: model)
-        var activation: Double = 0.0
-        var prim: Prim?
-        if !cfs.isEmpty {
-            repeat {
-                (candidate, activation) = cfs.remove(at: 0)
-                model.buffers["operator"] = candidate.copy()
-                let inst = model.procedural.findMatchingProduction()
-                (match, prim) = model.procedural.fireProduction(inst, compile: false)
-                if let pr = prim {
-                    if !match && !model.silent {
-                        let s = "   Operator " + candidate.name + " does not match because of " + pr.name
-                        model.addToTrace(s, level: 5)
-                    }
-                }
-                if match && candidate.spreadingActivation() <= 0.0 && model.buffers["operator"]?.slotValue("condition") != nil {
-                    match = false
-                    if !model.silent {
-                        let s = "   Rejected operator " + candidate.name + " because it has no associations and no production that tests all conditions"
-                        model.addToTrace(s, level: 2)
-                    }
-                }
-                model.buffers["operator"] = nil
-            } while !match && !cfs.isEmpty && cfs[0].1 > model.dm.retrievalThreshold
-        } else {
-            match = false
+        model.time += latency
+        if opRetrieved == nil {
             if !model.silent {
                 model.addToTrace("   No matching operator found", level: 2)
             }
+            return false
         }
-        if match {
-            opRetrieved = candidate
-            latency = model.dm.latency(activation)
-        } else {
-            opRetrieved = nil
-            latency = model.dm.latency(model.dm.retrievalThreshold)
-            }
-        model.time += latency
-        if opRetrieved == nil { return false }
         if model.dm.goalOperatorLearning {
             let item = (opRetrieved!, model.time - latency)
             previousOperators.append(item)
@@ -214,7 +294,7 @@ class Operator {
     func carryOutProductionsUntilOperatorDone() -> Bool {
         var match: Bool = true
         var first: Bool = true
-        while match && (model.buffers["operator"]?.slotvals["condition"] != nil || model.buffers["operator"]?.slotvals["action"] != nil) {
+        while match && model.buffers["operator"]?.slotvals["action"] != nil {
             let inst = model.procedural.findMatchingProduction()
             var pname = inst.p.name
             if pname.hasPrefix("t") {

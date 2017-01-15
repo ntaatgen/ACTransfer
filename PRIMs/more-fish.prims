@@ -22,10 +22,27 @@ define facts {
     (gt1 greaterthan three zero yes)
 }
 
+define instances {
+(mf1 G1 find-most G2 say-answer V1 acquarium V2 left)
+(mf2 G1 find-most G2 say-answer G3 countgoal V1 fish V2 red WM2 left WM3 zero)
+(mf3 G1 find-most G2 say-answer G3 countgoal V1 fish V2 red WM2 left WM1 one WM3 zero)
+(mf4 G1 find-most G2 say-answer G3 countgoal V1 fish V2 red WM2 left WM1 one WM3 zero RT1 count-fact RT2 one)
+(mf5 G1 find-most G2 say-answer G3 countgoal V1 fish V2 blue WM2 left WM1 one WM3 zero RT1 count-fact RT2 one)
+(mf6 G1 find-most G2 say-answer G3 countgoal V1 fish V2 error WM2 left WM1 two WM3 zero)
+(mf7 G1 find-most G2 say-answer V1 fish V2 error WM1 two WM2 left WM3 zero)
+(mf9 G1 find-most G2 say-answer V1 fish V2 error WM1 three WM2 left WM3 zero RT1 greaterthan RT2 three RT3 zero RT4 yes)
+(mf10 G1 find-most G2 say-answer V1 fish V2 error WM1 two WM2 right WM3 three WM4 left RT1 error)
+(mf11 G1 find-most G2 say-answer V1 acquarium V2 right WM1 three WM2 left WM3 three WM4 left)
+(mf12 G1 find-most G2 say-answer V1 acquarium V2 error WM1 two WM2 right WM3 three WM4 left)
+(mf13 G1 find-most G2 say-answer V1 acquarium V2 error WM1 left WM2 done WM3 three WM4 left)
+
+}
+
 define goal find-most {
     operator init-find-most {
-        WM1=nil
-        V1=acquarium
+        mf1
+//        WM1=nil
+//        V1=acquarium
         ==>
         V2->WM2
         zero->WM3
@@ -34,9 +51,10 @@ define goal find-most {
     }
 
     operator count-done-check-if-more {
-        RT1=nil
-        V1=fish
-        V2=error
+        mf7
+//        RT1=nil
+//        V1=fish
+//        V2=error
         ==>
         greaterthan->RT1
         WM1->RT2
@@ -44,9 +62,10 @@ define goal find-most {
     }
 
     operator find-most-new-count-is-more {
-        V1=fish
-        V2=error
-        RT4=yes
+        mf9
+//        V1=fish
+//        V2=error
+//        RT4=yes
         ==>
         WM1->WM3
         WM2->WM4
@@ -54,17 +73,19 @@ define goal find-most {
     }
 
     operator find-most-new-count-is-not-more {
-        V1=fish
-        V2=error
-        RT1=error
+        mf10
+//       V1=fish
+//       V2=error
+//       RT1=error
         ==>
         focusup->AC1
     }
 
     operator find-most-next-container {
-        WM3<>nil
-        V1=acquarium
-        V2<>error
+        mf11
+//        WM3<>nil
+//        V1=acquarium
+//        V2<>error
         ==>
         V2->WM2
         countgoal->G3
@@ -73,8 +94,9 @@ define goal find-most {
     }
 
     operator find-most-all-done {
-        V1=acquarium
-        V2=error
+        mf12
+//        V1=acquarium
+//        V2=error
         ==>
         done->WM2
         nil->G1
@@ -84,37 +106,42 @@ define goal find-most {
 
 define goal countgoal {
     operator init-countgoal {
-        WM1=nil
+        mf2
+//        WM1=nil
         ==>
         zero->WM1
     }
 
     operator countgoal-retrieve {
-        V1=fish
-        V2=red
-        RT1=nil
+       mf3
+//        V1=fish
+//        V2=red
+//        RT1=nil
         ==>
         WM1->RT2
         count-fact->RT1
     }
 
     operator countgoal-add-count {
-        V1=fish
-        V2=red
+         mf4
+//        V1=fish
+//        V2=red
         ==>
         RT3->WM1
         focusnext->AC1
     }
 
     operator countgoal-ignore-non-targets {
-        V1=fish
-        V2<>red
-        ==>
+//        V1=fish
+//        V2<>red
+        mf5
+    ==>
         focusnext->AC1
     }
 
     operator countgoal-done {
-        V2=error
+//        V2=error
+        mf6
         ==>
         nil->G3
         }
@@ -122,7 +149,8 @@ define goal countgoal {
 
 define goal say-answer {
     operator report-answer {
-        WM2=done
+        mf13
+//        WM2=done
         ==>
         say->AC1
         WM1->AC2

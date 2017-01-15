@@ -1,6 +1,8 @@
 // First example model: counting
 // Adapted from the ACT-R tutorial by Niels Taatgen
 
+// This is the variation with instances as conditions
+
 define task count {
   initial-goals: (count) // In this example the task and the goal are the same
   imaginal-autoclear: nil 
@@ -13,11 +15,15 @@ define task count {
   retrieval-reinforces: t
 }
 
+define instances {
+    (i1 G1 count V1 one V2 four)
+    (i2 G1 count V1 one V2 four WM1 two RT1 count-fact RT2 two RT3 three)
+    (i3 G1 count V1 one V2 four WM1 four RT1 count-fact RT2 four RT3 five)
+}
+
 define goal count {
   operator start-count {
-  "Start counting"
-   V1 <> nil  // There has to be a visual input with the starting number
-   WM1 = nil  // Imaginal should be empty
+    i1
   ==>
    V1 -> WM1 // Copy the start number to working memory
    count-fact -> RT1 // Start retrieving the next number
@@ -27,9 +33,7 @@ define goal count {
    }
 
   operator iterate {
-    "Iterate as long as count isn't done"
-    RT2 = WM1
-    V2 <> WM1
+    i2
    ==>
     RT3 -> WM1
     count-fact -> RT1
@@ -39,8 +43,7 @@ define goal count {
   }
 
   operator final {
-    "Stop when reaching final number"
-    V2 = WM1
+    i3
    ==>
     say -> AC1
     stop -> AC2

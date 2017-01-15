@@ -65,6 +65,7 @@ class Parser  {
                 case "task": if !parseTask() { return false}
                 case "goal": if !parseGoal() { return false }
                 case "facts": if !parseFacts() { return false }
+                case "instances": if !parseInstances() { return false }
                 case "screen": if !parseScreen() { return false }
                 case "inputs": if !parseInputs() { return false }
                 case "goal-action": if !parseGoalAction() { return false }
@@ -380,12 +381,21 @@ class Parser  {
             m.addToTraceField("Missing '{'")
             return false
         }
-        var conditions = [String]()
+        // New bit: scan the chunk the describes the condition instance
+        let conditionText = scanner.scanUpToCharactersFromSet(whitespaceNewLineParentheses)
+        if conditionText == nil {
+            m.addToTraceField("Unexpected end of file in operator definition")
+            return false
+        }
+        var condition = m.dm.chunks[conditionText!]
+        if condition == nil {
+            m.addToTraceField("Cannot find instance chunk \(conditionText!)")
+            return false
+        }
+        m.addToTraceField("Parsing instance chunk \(conditionText!)")
         var actions = [String]()
-        var scanningActions = false
         while !scanner.scanString("}", into: nil) {
             var item = scanner.scanUpToCharactersFromSet(whitespaceNewLineParentheses)
-//            println("\(item)")
             if item == nil {
                 m.addToTraceField("Unexpected end of file in operator definition")
                 return false
@@ -394,7 +404,6 @@ class Parser  {
                  _ = scanner.scanUpToString("\"")
                  _ = scanner.scanString("\"")
             } else if item! == "==>" {
-                scanningActions = true
             } else {
                 var prim = ""
                 var component = ""
@@ -464,14 +473,10 @@ class Parser  {
                 if newPrim != nil {
                     prim = newPrim!
                 }
-                if scanningActions {
                     actions.insert(prim, at: 0)
-                } else {
-                    conditions.insert(prim, at: 0)
-                }
             }
         }
-        m.operators.addOperator(chunk, conditions: conditions, actions: actions)
+        m.operators.addOperator(chunk, conditions: condition!, actions: actions)
 
 //        if !m.dm.goalOperatorLearning  {
             chunk.assocs[goalName] = (m.dm.defaultOperatorAssoc, 0)
@@ -564,6 +569,88 @@ class Parser  {
         }
         return true
     }
+    
+    func parseInstances() -> Bool {
+        if !scanner.scanString("{", into: nil) {
+            m.addToTraceField("Missing '{' in instance definition.")
+            return false
+        }
+        while !scanner.scanString("}", into: nil) {
+            if !scanner.scanString("(", into: nil) {
+                m.addToTraceField("Missing '(' in instance definition.")
+                return false
+            }
+            var slotindex = 0
+            var chunk: Chunk? = nil
+            while !scanner.scanString(")", into: nil) {
+                let slotName = scanner.scanUpToCharactersFromSet(whitespaceNewLineParentheses)
+                if slotName == nil {
+                    m.addToTraceField("Unexpected end of file in instance definition")
+                    return false
+                }
+
+                if slotName!.hasPrefix(":") {
+                    switch slotName! {
+                    case ":activation":
+                        let value = scanner.scanDouble()
+                        if value == nil || chunk == nil {
+                            m.addToTraceField("Invalid parameter value for \(slotName!)")
+                            return false
+                        }
+                        chunk!.fixedActivation = value!
+                    default:
+                        m.addToTraceField("Unknown parameter \(slotName!)")
+                        return false
+                    }
+                } else {
+
+                    if slotindex == 0 {
+                        chunk =  Chunk(s: slotName!, m: m)
+                        chunk!.setSlot("isa", value: "instance")
+                        chunk!.fixedActivation = defaultActivation
+                        slotindex += 1
+                    } else {
+                        let slotValue = scanner.scanUpToCharactersFromSet(whitespaceNewLineParentheses)
+                        if slotValue == nil {
+                            m.addToTraceField("Unexpected end of file in instance definition")
+                            return false
+                        }
+                        if m.dm.chunks[slotValue!] != nil {
+                            chunk!.setSlot(slotName!, value: slotValue!)
+                            slotindex += 1
+                        } else if slotValue! == chunk!.name {
+                            chunk!.setSlot(slotName!, value:  chunk!)
+                            slotindex += 1
+                        } else {
+                            let extraChunk = Chunk(s: slotValue!, m: m)
+                            extraChunk.setSlot("isa", value: "fact")
+                            extraChunk.setSlot("slot1", value: slotValue!)
+                            extraChunk.fixedActivation = defaultActivation
+                            m.dm.addToDM(extraChunk)
+                            m.addToTraceField("Adding undefined fact \(extraChunk.name) as default chunk")
+                            chunk!.setSlot(slotName!, value: slotValue!)
+                            slotindex += 1
+                        }
+                    }
+                }
+            }
+            if let existingChunk = m.dm.chunks[chunk!.name] {
+                if chunk! != existingChunk {
+                    m.addToTraceField("Instance \(chunk!.name) has already been defined with different values, consider renaming it.")
+                    return false
+                } else {
+                    m.addToTraceField("Instance \(chunk!.name) has already been defined elsewhere with same slot values, overwriting it.")
+                }
+            }
+            m.dm.addToDM(chunk!)
+            
+            m.addToTraceField("Reading fact \(chunk!.name)")
+            chunk!.definedIn = [taskNumber]
+        }
+        return true
+    }
+
+    
     
     func parseGoalAction() -> Bool {
         if !scanner.scanString("{", into: nil) {

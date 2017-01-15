@@ -117,7 +117,6 @@ class Procedural: NSObject, NSCoding {
     is above threshold
     */
     func findMatchingProduction() -> Instantiation {
-        let condition = model.buffers["operator"]?.slotvals["condition"]
         let action = model.buffers["operator"]?.slotvals["action"]
         var best: Instantiation? = nil
         for (_,p) in productions {
@@ -129,19 +128,13 @@ class Procedural: NSObject, NSCoding {
             
         }
         if best == nil || best!.u < primU {
-            if condition != nil {
-                let (primName,_) = chopPrims(condition!.description, n: 1)
-                let p = Production(name: "t" + primName, model: model, condition: condition!.description, action: action==nil ? nil : action!.description, op: nil, parent1: nil, parent2: nil, taskID: 0, u: primU)
-                let prim = Prim(name: primName, model: model)
-                p.addCondition(prim)
-                return Instantiation(prod: p, time: model.time, u: primU)
-            } else {
+
                 let (primName,_) = chopPrims(action!.description, n: 1)
                 let p = Production(name: "t" + primName, model: model, condition: nil, action: action!.description, op: nil, parent1: nil, parent2: nil, taskID: 0, u: primU)
                 let prim = Prim(name: primName, model: model)
                 p.addAction(prim)
                 return Instantiation(prod: p, time: model.time, u: primU)
-            }
+            
         } else {
             return best!
         }

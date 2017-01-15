@@ -137,31 +137,13 @@ class Production: NSObject, NSCoding {
     func instantiate() -> Instantiation? {
 
         if let opBuffer = model.buffers["operator"] {
-            if condition == opBuffer.slotvals["condition"]?.text() && action == opBuffer.slotvals["action"]?.text() {
+            if action == opBuffer.slotvals["action"]?.text() {
                 let utility = u + actrNoise(model.procedural.utilityNoise)
                 let inst = Instantiation(prod: self, time: model.time, u: utility)
                         return inst
             }
-        } else if op != nil {
-            for chunk in goalChecks {
-                if !chunk.inSlot(model.buffers["goal"]!) {
-//                    println("Chunk \(chunk) is not in goal")
-                    return nil
-                }
-            }
-            model.buffers["operator"] = op!.copy()
-            for cd in conditions {
-                if !cd.fire() {
-                    model.buffers["operator"] = nil
-
-                    return nil }
-            }
-            model.buffers["operator"] = nil
-            let utility = u + actrNoise(model.procedural.utilityNoise)
-            let inst = Instantiation(prod: self, time: model.time, u: utility)
-            return inst
         }
-        return nil        
+        return nil
     }
     
     func testFire() -> (Bool, Prim?) {
@@ -195,10 +177,10 @@ class Production: NSObject, NSCoding {
 //        if op != nil {
 //            model.buffers["operator"] = op!.copy()
 //        }
-        for bc in conditions {
-            if !bc.fire() { // println("\(bc) does not match")
-                return (false, bc) } // one of the conditions does not match
-        }
+//        for bc in conditions {
+//           if !bc.fire() { // println("\(bc) does not match")
+//              return (false, bc) } // one of the conditions does not match
+//     }
         for ac in actions {
             if !ac.fire() { // println("\(ac) does not execute")
                 return (false, ac) } // an action cannot be executed because its lhs is nil

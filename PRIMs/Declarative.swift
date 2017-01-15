@@ -83,7 +83,7 @@ class Declarative: NSObject, NSCoding  {
     /// Finst list for the current retrieval
     var finsts: [String] = []
     /// This Array has all the operators with arrays of their conditions and actions. We use this to find the optimal ovelap when defining new operators
-    var operatorCA: [(String,[String],[String])] = []
+    var operatorCA: [(String,[String])] = []
     /// Parameter that controls whether to use partial matching (true) or not (false, default)
     var partialMatching = partialMatchingDefault
     var newPartialMatchingPow = newPartialMatchingDefault
@@ -103,13 +103,12 @@ class Declarative: NSObject, NSCoding  {
         guard let model = aDecoder.decodeObject(forKey: "model") as? Model,
             let chunks = aDecoder.decodeObject(forKey: "chunks") as? [String:Chunk],
             let operatorCACol1 = aDecoder.decodeObject(forKey: "operatorCACol1") as? [String],
-            let operatorCACol2 = aDecoder.decodeObject(forKey: "operatorCACol2") as? [[String]],
             let operatorCACol3 = aDecoder.decodeObject(forKey: "operatorCACol3") as? [[String]]
             else { return nil }
         self.init(model: model)
         self.chunks = chunks
         for i in 0..<operatorCACol1.count {
-            self.operatorCA.append((operatorCACol1[i], operatorCACol2[i], operatorCACol3[i]))
+            self.operatorCA.append((operatorCACol1[i], operatorCACol3[i]))
         }
     }
     
@@ -117,10 +116,8 @@ class Declarative: NSObject, NSCoding  {
         coder.encode(self.model, forKey: "model")
         coder.encode(self.chunks, forKey: "chunks")
         let operatorCACol1 = self.operatorCA.map{ $0.0 }
-        let operatorCACol2 = self.operatorCA.map{ $0.1 }
-        let operatorCACol3 = self.operatorCA.map{ $0.2 }
+        let operatorCACol3 = self.operatorCA.map{ $0.1 }
         coder.encode(operatorCACol1, forKey: "operatorCACol1")
-        coder.encode(operatorCACol2, forKey: "operatorCACol2")
         coder.encode(operatorCACol3, forKey: "operatorCACol3")
         
     }
@@ -242,7 +239,17 @@ class Declarative: NSObject, NSCoding  {
         return latencyFactor * exp(-activation)
     }
     
-    func retrieve(_ chunk: Chunk) -> (Double, Chunk?) {
+    
+    
+    /**
+    Retrieve the most active chunk that matches the supplied pattern
+    - parameter chunk: a chunk containing the pattern to be retrieved
+    - returns: a tuple with the latency and the retrieved chunk (or nil if it failed)
+    */
+    func retrieve(chunk: Chunk) -> (Double, Chunk?) {
+        if chunk.type == "operator" {
+            return model.operators.retrieveOperator()
+        }
         retrieveError = false
         var bestMatch: Chunk? = nil
         var bestActivation: Double = retrievalThreshold
@@ -370,7 +377,7 @@ class Declarative: NSObject, NSCoding  {
         if partialMatching {
             (latency, retrieveResult) = partialRetrieve(retrievalQuery, mismatchFunction: mismatchFunction)
         } else {
-            (latency, retrieveResult) = retrieve(retrievalQuery)
+            (latency, retrieveResult) = retrieve(chunk: retrievalQuery)
         }
         if retrieveResult != nil {
             if stuff {
