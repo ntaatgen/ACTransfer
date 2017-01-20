@@ -431,6 +431,20 @@ class Declarative: NSObject, NSCoding  {
             contextj.assocs[neededi.name] = Assocs(s: neededi.name)
         }
         contextj.assocs[neededi.name]!.frequency += 1
+        
+        
+        /// Write to file
+        let output = "===========\n" + contextj.description + "\n" + neededi.name + "\n" + "\(contextj.assocs[neededi.name]!.frequency)" + "\n"
+        do {
+            let fileHandle = try NSFileHandle(forWritingToURL: NSURL(string: "/Users/trudybuwalda/Desktop/Holiday/assocs1.dat")!)
+            fileHandle.seekToEndOfFile()
+            let data = output.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+            fileHandle.writeData(data!)
+            fileHandle.closeFile()
+        } catch let error as NSError {
+            let err = error
+            print(err)
+        }
     }
 
     

@@ -549,21 +549,33 @@ func strToInt(content: [Factor], model: Model?) throws -> (result: Factor?, done
  Open jar file, parameters are passed on to command line
  */
 func openJar(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
-
-    let task = NSTask()
-    task.launchPath = "/usr/bin/java"
-    task.arguments = ["-jar"]
-    for arg in content {
-        task.arguments?.append(arg.description)
+    /// Write to file
+    let output = "=======================================================\n"
+    do {
+        let fileHandle = try NSFileHandle(forWritingToURL: NSURL(string: "/Users/trudybuwalda/Desktop/Holiday/assocs.dat")!)
+        fileHandle.seekToEndOfFile()
+        let data = output.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+        fileHandle.writeData(data!)
+        fileHandle.closeFile()
+    } catch let error as NSError {
+        let err = error
+        print(err)
     }
-    let pipe = NSPipe()
-    task.standardOutput = pipe
-    task.launch()
-    let data = pipe.fileHandleForReading.readDataToEndOfFile()
-    pipe.fileHandleForReading.closeFile()
-    let output: String = NSString(data: data, encoding: NSUTF8StringEncoding)! as String
-    task.terminate()
-    return (Factor.Str(output), true)
+
+//    let task = NSTask()
+//    task.launchPath = "/usr/bin/java"
+//    task.arguments = ["-jar"]
+//    for arg in content {
+//        task.arguments?.append(arg.description)
+//    }
+//    let pipe = NSPipe()
+//    task.standardOutput = pipe
+//    task.launch()
+//    let data = pipe.fileHandleForReading.readDataToEndOfFile()
+//    pipe.fileHandleForReading.closeFile()
+//    let output: String = NSString(data: data, encoding: NSUTF8StringEncoding)! as String
+//    task.terminate()
+    return (nil, true)
 }
 
 
@@ -713,7 +725,7 @@ func selectProblem(content: [Factor], model: Model?) throws -> (result: Factor?,
  Present items in a fixed math garden way
  */
 func fixedProblems(content: [Factor], model:Model?) throws -> (result: Factor?, done: Bool) {
-    let filepath = "/Volumes/Double-Whopper/Trudy/2015_Rekentuin/Model/fixedOrder.txt"
+    let filepath = "/Users/trudybuwalda/Desktop/fixedOrder.txt"
     var input: [String] = [];
     do {
         let data = try String(contentsOfFile:filepath, encoding: NSUTF8StringEncoding)
