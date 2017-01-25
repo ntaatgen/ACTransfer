@@ -405,7 +405,9 @@ class Declarative: NSObject, NSCoding  {
                 }
             }
             model.buffers["retrievalH"] = retrieveResult!
+            print("doeiTRUDY")
             updateFrequency()
+            print("hoiTrudy")
         } else if !stuff  {
             if !model.silent {
                 model.addToTrace("Retrieval failure", level: 2)
@@ -427,24 +429,45 @@ class Declarative: NSObject, NSCoding  {
 //        print(neededi)
 //        print(contextj.assocs)
 //        print(contextj.assocs[neededi.name])
-        if contextj.assocs[neededi.name] == nil {
-            contextj.assocs[neededi.name] = Assocs(s: neededi.name)
-        }
-        contextj.assocs[neededi.name]!.frequency += 1
+//        print(contextj.assocs[neededi.name] == nil)
+//        print(model.buffers["input"]!.assocs[neededi.name])
+//        print(Assocs(s: neededi.name))
         
-        
-        /// Write to file
-        let output = "===========\n" + contextj.description + "\n" + neededi.name + "\n" + "\(contextj.assocs[neededi.name]!.frequency)" + "\n"
-        do {
-            let fileHandle = try NSFileHandle(forWritingToURL: NSURL(string: "/Users/trudybuwalda/Desktop/Holiday/assocs1.dat")!)
-            fileHandle.seekToEndOfFile()
-            let data = output.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
-            fileHandle.writeData(data!)
-            fileHandle.closeFile()
-        } catch let error as NSError {
-            let err = error
-            print(err)
+        for (_, slot) in contextj.slotvals {
+            if slot.chunk() != nil {
+                print("\nhoi")
+                print(slot.chunk()!)
+                print(neededi.name)
+                if slot.chunk()!.assocs[neededi.name] == nil {
+                    slot.chunk()!.assocs[neededi.name] = Assocs(s: neededi.name)
+                }
+                slot.chunk()!.assocs[neededi.name]!.frequency += 1
+                print(slot.chunk()!.assocs)
+                print("freq:")
+                print(slot.chunk()!.assocs[neededi.name]!.frequency)
+                print("\ndoei")
+            }
         }
+        
+//        print(contextj.assocs[neededi.name] == nil)
+//        print(model.buffers["input"]!.assocs[neededi.name])
+//        print(contextj.assocs[neededi.name]!.frequency)
+//
+//        print(contextj.assocs[neededi.name]!.frequency)
+//        print("boeTRUDY")
+        
+//        /// Write to file
+//        let output = "===========\n" + contextj.description + "\n" + neededi.name + "\n" + "\(contextj.assocs[neededi.name]!.frequency)" + "\n"
+//        do {
+//            let fileHandle = try NSFileHandle(forWritingToURL: NSURL(string: "/Users/trudybuwalda/Desktop/Holiday/assocs1.dat")!)
+//            fileHandle.seekToEndOfFile()
+//            let data = output.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+//            fileHandle.writeData(data!)
+//            fileHandle.closeFile()
+//        } catch let error as NSError {
+//            let err = error
+//            print(err)
+//        }
     }
 
     

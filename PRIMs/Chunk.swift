@@ -409,6 +409,12 @@ class Chunk: NSObject, NSCoding {
                 for (_,value) in bufferChunk.slotvals {
                     switch value {
                     case .Symbol(let valchunk):
+                        print("Hiertrudy:")
+                        print(valchunk)
+                        print(freqNiCj(valchunk))
+                        if(valchunk.assocs["mf12"] != nil) {
+                            print(valchunk.assocs["mf12"]!.frequency)
+                        }
                         let posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * sjiWithoutLog(valchunk)) / (assocValue + Double(freqNiCj(valchunk))))
                         totalPosteriorSji += posteriorSji
                         if valchunk.assocs[self.name] != nil {
