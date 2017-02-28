@@ -66,7 +66,7 @@ class Operator {
     /**
     Add conditions and actions to an operator while trying to optimize the order of the PRIMs to maximize overlap with existing operators 
     */
-    func addOperator(_ op: Chunk, conditions: Chunk, actions: [String]) {
+    func addOperator(_ op: Chunk, actions: [String]) {
 
         var bestActionMatch: [String] = []
         var bestActionNumber: Int = -1
@@ -82,7 +82,6 @@ class Operator {
             }
         }
         let (actionString, actionList) = constructList(bestActionMatch, source: actions, overlap: bestActionNumber)
-        op.setSlot("condition", value: conditions)
         op.setSlot("action", value: actionString)
         model.dm.operatorCA.append((op.name, actionList))
     }
@@ -141,22 +140,24 @@ class Operator {
     - parameter bufferChunk: A chunk made of all the relevant buffers
     - returns: The match score
     */
-    func matchScore(op: Chunk, bufferChunk: Chunk) -> Double {
+    func matchScore(instance: Chunk, bufferChunk: Chunk) -> Double {
         var score = 0.0
-        let conditionChunk = op.slotValue("condition")!.chunk()!
+//        let conditionChunk = op.slotValue("condition")!.chunk()!
         var slotList: [String] = [] // List of all the slots
         var allValues: [Chunk:[String]] = [:]
-        for (slot,value) in conditionChunk.slotvals {
-            slotList.append(slot)
-            if value.type == "symbol" {
-                var slots = allValues[value.chunk()!]
-                if slots == nil {
-                    allValues[value.chunk()!] = [slot]
-                } else {
-                    slots!.append(slot)
-                    allValues[value.chunk()!] = slots!
+        for (slot,value) in instance.slotvals {
+            if slot != "operator" {
+                slotList.append(slot)
+                if value.type == "symbol" {
+                    var slots = allValues[value.chunk()!]
+                    if slots == nil {
+                        allValues[value.chunk()!] = [slot]
+                    } else {
+                        slots!.append(slot)
+                        allValues[value.chunk()!] = slots!
+                    }
                 }
-             }
+            }
         }
         for (slot,_) in bufferChunk.slotvals {
             if !slotList.contains(slot) {
@@ -165,7 +166,7 @@ class Operator {
         }
         for slot in slotList {
             let bufferValue = bufferChunk.slotvals[slot] ?? Value.Text("nil")
-            let operatorValue = conditionChunk.slotvals[slot] ?? Value.Text("nil")
+            let operatorValue = instance.slotvals[slot] ?? Value.Text("nil")
             if !(bufferValue.description == "nil" && operatorValue.description == "nil") {
                 if bufferValue.isEqual(operatorValue) {
                     score += 1.0
@@ -180,7 +181,7 @@ class Operator {
         // We have already collected duplicate values in repreatedValues
         for (_, slots) in allValues {
             if slots.count > 1 {
-                print("Checking pattern in \(op.name)")
+                print("Checking pattern in \(instance.name)")
                 var patternFound = true
                 for slot in slots {
                     if bufferChunk.slotvals[slot] == nil || bufferChunk.slotvals[slot]!.type != "symbol" {
@@ -220,13 +221,17 @@ class Operator {
         model.dm.retrieveError = false
         model.dm.conflictSet = []
         for (_,ch1) in model.dm.chunks {
-            if (ch1.type == "operator") &&  !model.dm.finsts.contains(ch1.name) {
-                let matchS = matchScore(op: ch1, bufferChunk: bufferChunk)
-                if matchS > bestMatchScore {
-                    bestMatchScore = matchS
-                    bestMatch = ch1
+            if (ch1.type == "instance") {
+                if let op = ch1.slotvals["operator"]?.chunk() {
+                    if !model.dm.finsts.contains(op.name)  {
+                        let matchS = matchScore(instance: ch1, bufferChunk: bufferChunk)
+                        if matchS > bestMatchScore {
+                            bestMatchScore = matchS
+                            bestMatch = op
+                        }
+                        model.dm.conflictSet.append((op, matchS))
+                    }
                 }
-                model.dm.conflictSet.append((ch1, matchS))
             }
         }
         if bestMatch != nil {
@@ -234,7 +239,6 @@ class Operator {
         } else {
             model.dm.retrieveError = true
             return (model.dm.latency(model.dm.retrievalThreshold), nil)
-            
         }
     }
     
@@ -247,7 +251,7 @@ class Operator {
     func findOperator() -> Bool {
         let retrievalRQ = Chunk(s: "operator", m: model)
         retrievalRQ.setSlot("isa", value: "operator")
-        var (latency,opRetrieved) = model.dm.retrieve(chunk: retrievalRQ)
+        let (latency,opRetrieved) = model.dm.retrieve(chunk: retrievalRQ)
             let cfs = model.dm.conflictSet.sorted(by: { (item1, item2) -> Bool in
                 let (_,u1) = item1
                 let (_,u2) = item2

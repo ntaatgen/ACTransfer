@@ -15,16 +15,9 @@ define task count {
   retrieval-reinforces: t
 }
 
-define instances {
-    (i1 G1 count V1 one V2 four)
-    (i2 G1 count V1 one V2 four WM1 two RT1 count-fact RT2 two RT3 three)
-    (i3 G1 count V1 one V2 four WM1 four RT1 count-fact RT2 four RT3 five)
-}
 
 define goal count {
   operator start-count {
-    i1
-  ==>
    V1 -> WM1 // Copy the start number to working memory
    count-fact -> RT1 // Start retrieving the next number
    V1 -> RT2
@@ -33,8 +26,6 @@ define goal count {
    }
 
   operator iterate {
-    i2
-   ==>
     RT3 -> WM1
     count-fact -> RT1
     RT3 -> RT2
@@ -43,8 +34,6 @@ define goal count {
   }
 
   operator final {
-    i3
-   ==>
     say -> AC1
     stop -> AC2
     nil -> V2
@@ -53,6 +42,12 @@ define goal count {
 
 }
 
+define instances {
+(i1 G1 count V1 one V2 four operator start-count)
+(i2 G1 count V1 one V2 four WM1 two RT1 count-fact RT2 two RT3 three operator iterate)
+(i2a G1 count V1 one V2 four WM1 one RT1 count-fact RT2 one RT3 two operator iterate)
+(i3 G1 count V1 one V2 four WM1 four RT1 count-fact RT2 four RT3 five operator final)
+}
 
 define action say {
   latency: 0.3

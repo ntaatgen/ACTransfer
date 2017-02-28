@@ -381,18 +381,6 @@ class Parser  {
             m.addToTraceField("Missing '{'")
             return false
         }
-        // New bit: scan the chunk the describes the condition instance
-        let conditionText = scanner.scanUpToCharactersFromSet(whitespaceNewLineParentheses)
-        if conditionText == nil {
-            m.addToTraceField("Unexpected end of file in operator definition")
-            return false
-        }
-        var condition = m.dm.chunks[conditionText!]
-        if condition == nil {
-            m.addToTraceField("Cannot find instance chunk \(conditionText!)")
-            return false
-        }
-        m.addToTraceField("Parsing instance chunk \(conditionText!)")
         var actions = [String]()
         while !scanner.scanString("}", into: nil) {
             var item = scanner.scanUpToCharactersFromSet(whitespaceNewLineParentheses)
@@ -476,7 +464,7 @@ class Parser  {
                     actions.insert(prim, at: 0)
             }
         }
-        m.operators.addOperator(chunk, conditions: condition!, actions: actions)
+        m.operators.addOperator(chunk, actions: actions)
 
 //        if !m.dm.goalOperatorLearning  {
             chunk.assocs[goalName] = (m.dm.defaultOperatorAssoc, 0)

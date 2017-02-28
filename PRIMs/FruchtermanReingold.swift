@@ -188,10 +188,10 @@ class FruchtermanReingold {
         for (_,chunk) in model.dm.chunks {
             if let type = chunk.slotvals["isa"] {
                 if type.description == "operator" {
-                    var conditionList = chunk.slotvals["condition"]!.description.components(separatedBy: ";")
+//                    var conditionList = chunk.slotvals["condition"]!.description.components(separatedBy: ";")
                     var currentName = ""
                     var currentNode: Node? = nil
-                    while !conditionList.isEmpty {
+/*                    while !conditionList.isEmpty {
                         let lastItem = conditionList.removeLast()
                         currentName = currentName == "" ? lastItem : lastItem + ";" + currentName
                         if let node = nodes[currentName] {
@@ -213,7 +213,7 @@ class FruchtermanReingold {
                             }
                             currentNode = newNode
                         }
-                    }
+                    } */
                     let operatorNode = Node(name: chunk.name)
                     operatorNode.taskNumber = chunk.definedIn.isEmpty ? -3 : chunk.definedIn[0]
                     if chunk.definedIn.count > 1 {
@@ -234,8 +234,8 @@ class FruchtermanReingold {
                         let taskEdge = Edge(from: taskNode, to: operatorNode)
                         edges.append(taskEdge)
                     }
-                    let operatorEdge = Edge(from: operatorNode, to: currentNode!)
-                    edges.append(operatorEdge)
+//                    let operatorEdge = Edge(from: operatorNode, to: currentNode!)
+//                    edges.append(operatorEdge)
                     var actionList = chunk.slotvals["action"]!.description.components(separatedBy: ";")
                     currentName = ""
                     currentNode = nil
