@@ -181,7 +181,9 @@ class Chunk: NSObject, NSCoding {
         if creationTime == nil { return 0 }
  
         let fixedComponent = fixedActivation == nil ? 0.0 : exp(fixedActivation!)
-        if model.dm.optimizedLearning {
+        if model.dm.baseLevelDecay == 0 {
+            return fixedComponent
+        } else if model.dm.optimizedLearning {
             return log(fixedComponent + (Double(references) * pow(model.time - creationTime! + 0.05, -model.dm.baseLevelDecay)) / (1 - model.dm.baseLevelDecay))
 //            let x = log((Double(references)/(1 - model.dm.baseLevelDecay)))
 //            let y = model.dm.baseLevelDecay * log(model.time - creationTime!)
@@ -263,9 +265,9 @@ class Chunk: NSObject, NSCoding {
     
     func frequencyInSlotOf(chunk: Chunk) -> Int {
         var freq = 0
-        if(self.name == "mf18") {
-            print(chunk)
-        }
+//        if(self.name == "mf18") {
+//            print(chunk)
+//        }
         for (_,value) in chunk.slotvals {
             switch value {
             case .Symbol(let valChunk):
@@ -274,9 +276,9 @@ class Chunk: NSObject, NSCoding {
                 }
             default: break
             }
-            if(self.name == "mf18") {
-                print(freq)
-            }
+//            if(self.name == "mf18") {
+//                print(freq)
+//            }
         }
         return freq
     }
@@ -306,6 +308,11 @@ class Chunk: NSObject, NSCoding {
     - returns: the Sji value
     */
     func sji(chunk: Chunk) -> Double {
+//        if self.name == "mf12" {
+//            print("fanTrudy1:")
+//            print(self)
+//            print(Double(self.fan))
+//        }
         if let value = chunk.assocs[self.name] {
             return calculateSji((value.sji, value.operatorLearning))
         } else if self.appearsInSlotOf(chunk) {
@@ -315,6 +322,12 @@ class Chunk: NSObject, NSCoding {
     }
     
     func sjiWithoutLog(chunk: Chunk) -> Double {
+        //if self.name == "mf12" {
+         //   print("fanTrudy:")
+         //   print(self)
+         //   print(Double(self.fan))
+         //   print(exp(model.dm.maximumAssociativeStrength) / Double(self.fan))
+        //}
         if let value = chunk.assocs[self.name] {
             return calculateSji((value.sji, value.operatorLearning))
         } else if self.appearsInSlotOf(chunk) {
@@ -329,9 +342,11 @@ class Chunk: NSObject, NSCoding {
      
      - returns: the Sji value
      */
-    func freqNiCj(chunk: Chunk) -> Int {
-        if let value = chunk.assocs[self.name] {
+    func freqNiCj(valchunk: Chunk) -> Int {
+        
+        if let value = valchunk.assocs[self.name] {
             return value.frequency
+            
         }
         return 0
     }
@@ -409,14 +424,20 @@ class Chunk: NSObject, NSCoding {
                 for (_,value) in bufferChunk.slotvals {
                     switch value {
                     case .Symbol(let valchunk):
-                        print("Hiertrudy:")
-                        print(valchunk)
-                        print(freqNiCj(valchunk))
-                        if(valchunk.assocs["mf12"] != nil) {
-                            print(valchunk.assocs["mf12"]!.frequency)
+                        var posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * (valchunk.sjiWithoutLog(self)) + 1) / (assocValue + Double(freqNiCj(valchunk))))
+//                        if posteriorSji < 0 {
+//                            print(posteriorSji)
+//                            print(valchunk)
+//                            print(Double(freqNiCj(valchunk)))
+//                            print(valchunk.sjiWithoutLog(self))
+//                            print(valchunk.name)
+//                        }
+                        if posteriorSji < 0 {
+                            posteriorSji = 0
                         }
-                        let posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * sjiWithoutLog(valchunk)) / (assocValue + Double(freqNiCj(valchunk))))
-                        totalPosteriorSji += posteriorSji
+                        if valchunk.name != "times" {
+                            totalPosteriorSji += posteriorSji
+                        }
                         if valchunk.assocs[self.name] != nil {
                             valchunk.assocs[self.name]!.posteriorSji = posteriorSji
                         }
@@ -508,8 +529,21 @@ class Chunk: NSObject, NSCoding {
     
     func activation() -> Double {
         if creationTime == nil {return 0}
-        return  self.baseLevelActivation()
-            + self.spreadingActivation() + calculateNoise()
+        
+        let spreadingAct = self.spreadingActivation()
+        //let baselevelAct = self.baseLevelActivation()
+        let baselevelAct = 1.0
+        let noise = calculateNoise()
+        if model.batchMode && model.activationTrace {
+            if self.type == "fact" {
+                model.addToActivationTrace(model.time - model.startTime, request: model.buffers["retrievalR"]!.slotvals["slot1"]!.description + "x" + model.buffers["retrievalR"]!.slotvals["slot3"]!.description, name: self.name, activation: baselevelAct, type: "baselevel")
+                model.addToActivationTrace(model.time - model.startTime, request: model.buffers["retrievalR"]!.slotvals["slot1"]!.description + "x" + model.buffers["retrievalR"]!.slotvals["slot3"]!.description, name: self.name, activation: spreadingAct, type: "spreading")
+                model.addToActivationTrace(model.time - model.startTime, request: model.buffers["retrievalR"]!.slotvals["slot1"]!.description + "x" + model.buffers["retrievalR"]!.slotvals["slot3"]!.description, name: self.name, activation: noise, type: "noise")
+            }
+        }
+        
+        return  baselevelAct
+            + spreadingAct + noise
     }    
     
     func mergeAssocs(newchunk: Chunk) {

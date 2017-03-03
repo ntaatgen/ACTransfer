@@ -130,13 +130,13 @@ class BatchRun {
                         }
                         
                         // Print activition trace to file
-//                        var activationTraceOutput = ""
-//                        if self.model.activationTrace {
-//                            for (time, chunk, activation) in self.model.activationTraceData {
-//                                activationTraceOutput += "\(i) \(taskname!) \(taskLabel!) \(j) \(time) \(chunk) \(activation) \n"
-//                            }
-//                            self.model.activationTraceData = []
-//                        }
+                        var activationTraceOutput = ""
+                        if self.model.activationTrace {
+                            for (time, request, chunk, type, activation) in self.model.activationTraceData {
+                                activationTraceOutput += "\(i) \(taskname!) \(taskLabel!) \(j) \(time) \(request) \(chunk) \(type) \(activation) \n"
+                            }
+                            self.model.activationTraceData = []
+                        }
                         
                         if !newfile {
                             // Output File
@@ -169,19 +169,19 @@ class BatchRun {
                             }
                             
                             // Activation Trace File
-//                            if NSFileManager.defaultManager().fileExistsAtPath(self.activationTraceFileName.path!) && self.model.activationTrace {
-//                                var err:NSError?
-//                                do {
-//                                    let fileHandle = try NSFileHandle(forWritingToURL: self.activationTraceFileName)
-//                                    fileHandle.seekToEndOfFile()
-//                                    let data = activationTraceOutput.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
-//                                    fileHandle.writeData(data!)
-//                                    fileHandle.closeFile()
-//                                } catch let error as NSError {
-//                                    err = error
-//                                    self.mainModel.addToTraceField("Can't open activation trace fileHandle \(err)")
-//                                }
-//                            }
+                            if NSFileManager.defaultManager().fileExistsAtPath(self.activationTraceFileName.path!) && self.model.activationTrace {
+                                var err:NSError?
+                                do {
+                                    let fileHandle = try NSFileHandle(forWritingToURL: self.activationTraceFileName)
+                                    fileHandle.seekToEndOfFile()
+                                    let data = activationTraceOutput.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
+                                    fileHandle.writeData(data!)
+                                    fileHandle.closeFile()
+                                } catch let error as NSError {
+                                    err = error
+                                    self.mainModel.addToTraceField("Can't open activation trace fileHandle \(err)")
+                                }
+                            }
                         } else {
                             newfile = false
                             var err:NSError?

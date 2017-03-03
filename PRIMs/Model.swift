@@ -59,6 +59,8 @@ class Model: NSObject, NSCoding {
     var outputData: [DataLine] = []
     var batchTraceData: [(Double, String, String)] = []
     var batchTrace: Bool = false
+    var activationTraceData: [(Double, String, String, String, Double)] = []
+    var activationTrace: Bool = false
     var formerBuffers: [String:Chunk] = [:]
     var modelCode: String?
     static let rewardDefault = 0.0
@@ -183,6 +185,10 @@ class Model: NSObject, NSCoding {
         traceBuffer.append((level,"\(timeString)  " + s))
 //        trace += "\(timeString)  " + s + "\n"
         }
+    }
+    
+    func addToActivationTrace(time: Double, request: String, name: String, activation: Double, type: String) {
+        activationTraceData.append(time, request, name, type, activation)
     }
     
     /**
@@ -361,6 +367,8 @@ class Model: NSObject, NSCoding {
             batchTrace = boolVal
         case "associative-learning:":
             dm.associativeLearning = boolVal
+        case "activation-trace:":
+            activationTrace = boolVal
         //case "batch-trace":
         //    if batchMode {
         //        batchTrace = true

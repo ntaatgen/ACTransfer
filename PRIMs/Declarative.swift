@@ -271,17 +271,19 @@ class Declarative: NSObject, NSCoding  {
             }
         }
         
-//        if model.activationTrace {
-//            if !model.batchMode {
-//                for (chunk,activation) in conflictSet {
-//                    model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 3)
-//                }
-//            } else {
-//                for (chunk, activation) in conflictSet {
-//                    model.addToActivationTrace(model.time - model.startTime, chunkName: chunk.name, activation: activation)
-//                }
-//            }
-//        }
+        if model.activationTrace {
+            if !model.batchMode {
+                for (chunk,activation) in conflictSet {
+                    model.addToTrace("   CFS: \(chunk.name) \(activation)", level: 3)
+                }
+            } else {
+                if chunk.type == "fact" {
+                    for (_, ch) in chunks {
+                        //model.addToActivationTrace(model.time - model.startTime, name: ch.name, activation: ch.activation())
+                    }
+                }
+            }
+        }
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
         } else {
@@ -319,6 +321,37 @@ class Declarative: NSObject, NSCoding  {
         }
     }
     
+    // Mismatch function for numbers with intercept
+    func mismatchNumbersIntercept(x: Value, _ y: Value) -> Double {
+        /* Return similarity if there is one, else return -1
+         Similarity is calculated by dividing the smallest number by the largest number.*/
+        if (Int(x.description) != nil && Int(y.description) != nil)  {
+            let maxValue = max(Double(x.description)!, Double(y.description)!)
+            let minValue = min(Double(x.description)!, Double(y.description)!)
+            var mismatch = (minValue - maxValue) / 10
+            if (minValue != maxValue) {
+                mismatch -= 0.05
+            }
+            return mismatch >= -1 ? mismatch : -1
+        } else {
+            return -1
+        }
+    }
+    
+    // Mismatch function for numbers with slope
+    func mismatchNumbersSlope(x: Value, _ y: Value) -> Double {
+        /* Return similarity if there is one, else return -1
+         Similarity is calculated by dividing the smallest number by the largest number.*/
+        if (Int(x.description) != nil && Int(y.description) != nil)  {
+            let maxValue = max(Double(x.description)!, Double(y.description)!)
+            let minValue = min(Double(x.description)!, Double(y.description)!)
+            let mismatch = (minValue - maxValue) / 10
+            return mismatch >= -1 ? mismatch : -1
+        } else {
+            return -1
+        }
+    }
+    
     // General Mismatch Function
     func mismatchFunction(x: Value, y: Value) -> Double? {
         /* Select the correct mismatch function and return similarity if there is one */
@@ -326,7 +359,7 @@ class Declarative: NSObject, NSCoding  {
         if (x.description == y.description) {
             mismatch = 0
         } else if (Double(x.description) != nil && Double(y.description) != nil) {
-            mismatch = mismatchNumbers(x, y)
+            mismatch = mismatchNumbersIntercept(x, y)
         } else {
             mismatch = -1
         }
@@ -362,12 +395,19 @@ class Declarative: NSObject, NSCoding  {
             } else {
                 activation = ch1.activation() + mismatch * misMatchPenalty
             }
+            if model.batchMode && model.activationTrace {
+                if chunk.type == "fact" {
+                    model.addToActivationTrace(model.time - model.startTime, request: model.buffers["retrievalR"]!.slotvals["slot1"]!.description + "x" + model.buffers["retrievalR"]!.slotvals["slot3"]!.description, name: ch1.name, activation: activation, type: "activation")
+                    model.addToActivationTrace(model.time - model.startTime, request: model.buffers["retrievalR"]!.slotvals["slot1"]!.description + "x" + model.buffers["retrievalR"]!.slotvals["slot3"]!.description, name: ch1.name, activation: mismatch * misMatchPenalty, type: "mismatch")
+                }
+            }
             conflictSet.append((ch1,activation))
             if activation > bestActivation {
                 bestActivation = activation
                 bestMatch = ch1
             }        
             }
+
         
         if bestActivation > retrievalThreshold {
             return (latency(bestActivation) , bestMatch)
@@ -405,9 +445,9 @@ class Declarative: NSObject, NSCoding  {
                 }
             }
             model.buffers["retrievalH"] = retrieveResult!
-            print("doeiTRUDY")
+
             updateFrequency()
-            print("hoiTrudy")
+
         } else if !stuff  {
             if !model.silent {
                 model.addToTrace("Retrieval failure", level: 2)
@@ -425,36 +465,19 @@ class Declarative: NSObject, NSCoding  {
         // Update the F(Ni & Cj) between the retrieved chunk and the context
         let contextj = model.buffers["input"]!
         let neededi = model.buffers["retrievalH"]!
-//        print(contextj)
-//        print(neededi)
-//        print(contextj.assocs)
-//        print(contextj.assocs[neededi.name])
-//        print(contextj.assocs[neededi.name] == nil)
-//        print(model.buffers["input"]!.assocs[neededi.name])
-//        print(Assocs(s: neededi.name))
-        
+
         for (_, slot) in contextj.slotvals {
             if slot.chunk() != nil {
-                print("\nhoi")
-                print(slot.chunk()!)
-                print(neededi.name)
-                if slot.chunk()!.assocs[neededi.name] == nil {
-                    slot.chunk()!.assocs[neededi.name] = Assocs(s: neededi.name)
+                for (_, slotNeeded) in neededi.slotvals {
+                    if slotNeeded.chunk() != nil && slotNeeded.chunk()! == slot.chunk()! {
+                        if slot.chunk()!.assocs[neededi.name] == nil {
+                            slot.chunk()!.assocs[neededi.name] = Assocs(s: neededi.name)
+                        }
+                        slot.chunk()!.assocs[neededi.name]!.frequency += 1
+                    }
                 }
-                slot.chunk()!.assocs[neededi.name]!.frequency += 1
-                print(slot.chunk()!.assocs)
-                print("freq:")
-                print(slot.chunk()!.assocs[neededi.name]!.frequency)
-                print("\ndoei")
             }
         }
-        
-//        print(contextj.assocs[neededi.name] == nil)
-//        print(model.buffers["input"]!.assocs[neededi.name])
-//        print(contextj.assocs[neededi.name]!.frequency)
-//
-//        print(contextj.assocs[neededi.name]!.frequency)
-//        print("boeTRUDY")
         
 //        /// Write to file
 //        let output = "===========\n" + contextj.description + "\n" + neededi.name + "\n" + "\(contextj.assocs[neededi.name]!.frequency)" + "\n"

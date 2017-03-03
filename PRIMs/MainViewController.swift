@@ -449,11 +449,11 @@ class MainViewController: NSViewController,NSTableViewDataSource,NSTableViewDele
             updateAllViews()
         } else if sender == chunkTable && sender.selectedRow != -1 {
             let chunk = model.dm.chunks[dmTable[sender.selectedRow].0]!
-            chunkTextField.stringValue = "\(chunk)\nBaselevel = \(chunk.baseLevelActivation())\nActivation = \(chunk.activation())\n"
+            chunkTextField.stringValue = "\(chunk)\nBaselevel = \(chunk.baseLevelActivation())\nSpreading = \(chunk.spreadingActivation())\nAssociative = \(chunk.alSpreadingFromBuffer("input", assocValue: 10))\nActivation = \(chunk.activation())\n"
             if !chunk.assocs.isEmpty {
-                chunkTextField.stringValue += "Associations:\n"
+                chunkTextField.stringValue += "Associations and frequency:\n"
                 for (chunkName, assoc) in chunk.assocs {
-                    chunkTextField.stringValue += "\(chunkName): \(assoc)\n"
+                    chunkTextField.stringValue += "\(chunkName): \(assoc.frequency)\n"
                 }
             }
         }
@@ -657,6 +657,7 @@ class MainViewController: NSViewController,NSTableViewDataSource,NSTableViewDele
         let saveResult = saveDialog.runModal()
         if saveResult != NSFileHandlingPanelOKButton { return }
         if saveDialog.URL == nil { return }
+        
 //        print("Loading script \(fileDialog.URL!) to output to \(saveDialog.URL!)")
         batchRunner = BatchRun(script: batchScript, mainModel: model, outputFile: saveDialog.URL!, controller: self, directory: directory!)
 //        model.tracing = false
