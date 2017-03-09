@@ -30,7 +30,7 @@ class Parser  {
     fileprivate let whiteSpaceNewLineParenthesesEqual: NSMutableCharacterSet = NSMutableCharacterSet(charactersIn: "{}()=,")
     var globalVariableMapping: [String:Int] = [:]
     
-    /** 
+    /**
     Parse a model file. Takes the String that is entered at the creation of the class instance, and sets
     the necessary variables in the model.
     
@@ -45,8 +45,8 @@ class Parser  {
             if stringBeforeComment != nil {
                 newstring += stringBeforeComment!
             }
-            scanner.scanUpToString("\n")
-            scanner.scanString("\n")
+            _ = scanner.scanUpToString("\n")
+            _ = scanner.scanString("\n")
         }
         scanner = Scanner(string: newstring)
         m.clearTrace()
@@ -391,8 +391,8 @@ class Parser  {
                 return false
             }
             if item!.hasPrefix("\"") {
-                scanner.scanUpToString("\"")
-                scanner.scanString("\"")
+                 _ = scanner.scanUpToString("\"")
+                 _ = scanner.scanString("\"")
             } else if item! == "==>" {
                 scanningActions = true
             } else {

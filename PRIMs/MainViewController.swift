@@ -382,7 +382,7 @@ class MainViewController: NSViewController,NSTableViewDataSource,NSTableViewDele
     func respondToOpenFile(_ notification: Notification) {
         let url = notification.object as? URL
         if url != nil {
-            model.loadModelWithString(url!)
+            _ = model.loadModelWithString(url!)
             primViewCalculateGraph(primGraph)
             primGraph.needsDisplay = true
             updateAllViews()
@@ -418,14 +418,14 @@ class MainViewController: NSViewController,NSTableViewDataSource,NSTableViewDele
     func tableView(_ tableView: NSTableView, objectValueFor tableColumn: NSTableColumn?, row: Int) -> Any? {
         switch tableView {
         case productionTable:
-            switch String(tableColumn!.identifier) {
+            switch String(tableColumn!.identifier)! {
             case "Name": return pTable[row].name
             case "Utility": return String(format:"%.2f", pTable[row].u)
             default:
                 return nil
             }
         case taskTable:
-            switch String(tableColumn!.identifier) {
+            switch String(tableColumn!.identifier)! {
             case "Name": return row == model.currentTaskIndex ? "** " + model.tasks[row].name : model.tasks[row].name
             case "Loaded": let text = NSMutableAttributedString(string: model.tasks[row].loaded ? "▶︎" : "")
             text.addAttribute(NSForegroundColorAttributeName, value: numberToColor(row), range: NSMakeRange(0, text.length))
@@ -723,7 +723,7 @@ class MainViewController: NSViewController,NSTableViewDataSource,NSTableViewDele
         
     }
 
-    override var representedObject: AnyObject? {
+    override var representedObject: Any? {
         didSet {
         // Update the view, if already loaded.
         }

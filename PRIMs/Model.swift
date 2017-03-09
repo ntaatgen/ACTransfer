@@ -453,7 +453,7 @@ class Model: NSObject, NSCoding {
     
     func loadParameters() {
         for (parameter,value) in parameters {
-            setParameter(parameter, value: value)
+            _ = setParameter(parameter, value: value)
         }
     }
     
@@ -705,7 +705,7 @@ class Model: NSObject, NSCoding {
             parameters = []
             let parser = Parser(model: self, text: modelText, taskNumber: taskNumber!)
             setParametersToDefault()
-            parser.parseModel()
+            _ = parser.parseModel()
             if scenario.initScript != nil {
                 scenario.initScript!.reset()
                 scenario.initScript!.step(self)
@@ -730,7 +730,7 @@ class Model: NSObject, NSCoding {
                 scenario = PRScenario()
                 parameters = []
                 setParametersToDefault()
-                parseCode(modelText,taskNumber: i)
+                _ = parseCode(modelText,taskNumber: i)
                 tasks[i].loaded = true
             }
             currentTask = tasks[i].name

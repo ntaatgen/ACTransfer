@@ -53,19 +53,19 @@ class BatchRun {
             }
             scanner = Scanner(string: self.batchScript)
             
-            while let command = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL) {
+            while let command = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL as CharacterSet) {
                 var stopByTime = false
                 switch command {
                 case "run-time":
                     stopByTime = true
                     fallthrough
                 case "run":
-                    let taskname = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
+                    let taskname = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL as CharacterSet)
                     if taskname == nil {
                         self.mainModel.addToTraceField("Illegal task name in run")
                         return
                     }
-                    let taskLabel = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
+                    let taskLabel = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL as CharacterSet)
                     if taskLabel == nil {
                         self.mainModel.addToTraceField("Illegal task label in run")
                         return
@@ -228,7 +228,7 @@ class BatchRun {
                 case "done": break
 //                    print("*** Model has finished running ****")
                 case "load-image":
-                    let filename = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
+                    let filename = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL as CharacterSet)
                     if filename == nil {
                         self.mainModel.addToTraceField("Illegal task name in run")
                         return
@@ -240,7 +240,7 @@ class BatchRun {
                     self.model.dm.reintegrateChunks()
                     self.model.batchMode = true
                 case "save-image":
-                    let filename = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
+                    let filename = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL as CharacterSet)
                     if filename == nil {
                         self.mainModel.addToTraceField("Illegal task name in run")
                         return
