@@ -11,20 +11,20 @@ import Foundation
 
 class BatchRun {
     let batchScript: String
-    let outputFileName: NSURL
+    let outputFileName: URL
     var model: Model
     unowned let mainModel: Model
     unowned let controller: MainViewController
-    let directory: NSURL
+    let directory: URL
     var progress: Double = 0.0
-    var traceFileName: NSURL
-    var activationTraceFileName: NSURL
+    var traceFileName: URL
+    var activationTraceFileName: URL
     
-    init(script: String, mainModel: Model, outputFile: NSURL, controller: MainViewController, directory: NSURL) {
+    init(script: String, mainModel: Model, outputFile: URL, controller: MainViewController, directory: URL) {
         self.batchScript = script
         self.outputFileName = outputFile
-        self.traceFileName = outputFile.URLByDeletingPathExtension!.URLByAppendingPathExtension("tracedat")
-        self.activationTraceFileName = outputFile.URLByDeletingPathExtension!.URLByAppendingPathExtension("activitydat")
+        self.traceFileName = outputFile.deletingPathExtension().appendingPathExtension("tracedat")
+        self.activationTraceFileName = outputFile.deletingPathExtension().appendingPathExtension("activitydat")
         self.model = Model(batchMode: true)
         self.controller = controller
         self.directory = directory
@@ -35,10 +35,10 @@ class BatchRun {
     
     func runScript() {
         mainModel.clearTrace()
-        dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_LOW, 0)) { () -> Void in
+        DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.low).async { () -> Void in
 
-        var scanner = NSScanner(string: self.batchScript)
-        let whiteSpaceAndNL = NSMutableCharacterSet.whitespaceAndNewlineCharacterSet()
+        var scanner = Scanner(string: self.batchScript)
+        let whiteSpaceAndNL = NSMutableCharacterSet.whitespaceAndNewline()
         _ = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
         let numberOfRepeats = scanner.scanInt()
         if numberOfRepeats == nil {
@@ -48,10 +48,10 @@ class BatchRun {
         var newfile = true
         for i in 0..<numberOfRepeats! {
             self.mainModel.addToTraceField("Run #\(i + 1)")
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 self.controller.updateAllViews()
             }
-            scanner = NSScanner(string: self.batchScript)
+            scanner = Scanner(string: self.batchScript)
             
             while let command = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL) {
                 var stopByTime = false
@@ -76,7 +76,7 @@ class BatchRun {
                         return
                     }
                     
-                    while !scanner.atEnd && (scanner.string as NSString).characterAtIndex(scanner.scanLocation) != 10 && (scanner.string as NSString).characterAtIndex(scanner.scanLocation) != 13 {
+                    while !scanner.isAtEnd && (scanner.string as NSString).character(at: scanner.scanLocation) != 10 && (scanner.string as NSString).character(at: scanner.scanLocation) != 13 {
                         let batchParam = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
                         self.model.batchParameters.append(batchParam!)
                         self.mainModel.addToTraceField("Parameter: \(batchParam!)")
@@ -87,12 +87,12 @@ class BatchRun {
                     } else {
                         self.mainModel.addToTraceField("Running task \(taskname!) with label \(taskLabel!) for \(endCriterium!) trials")
                     }
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         self.controller.updateAllViews()
                     }
                     var tasknumber = self.model.findTask(taskname!)
                     if tasknumber == nil {
-                        let taskPath = self.directory.URLByAppendingPathComponent(taskname! + ".prims")
+                        let taskPath = self.directory.appendingPathComponent(taskname! + ".prims")
                         print("Trying to load \(taskPath)")
                         if !self.model.loadModelWithString(taskPath) {
                             self.mainModel.addToTraceField("Task \(taskname!) is not loaded nor can it be found")
@@ -140,13 +140,13 @@ class BatchRun {
                         
                         if !newfile {
                             // Output File
-                            if NSFileManager.defaultManager().fileExistsAtPath(self.outputFileName.path!) {
+                            if FileManager.default.fileExists(atPath: self.outputFileName.path!) {
                                 var err:NSError?
                                 do {
-                                    let fileHandle = try NSFileHandle(forWritingToURL: self.outputFileName)
+                                    let fileHandle = try FileHandle(forWritingTo: self.outputFileName)
                                     fileHandle.seekToEndOfFile()
-                                    let data = output.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
-                                    fileHandle.writeData(data!)
+                                    let data = output.data(using: String.Encoding.utf8, allowLossyConversion: false)
+                                    fileHandle.write(data!)
                                     fileHandle.closeFile()
                                 } catch let error as NSError {
                                     err = error
@@ -154,13 +154,13 @@ class BatchRun {
                                 }
                             }
                             // Trace File
-                            if NSFileManager.defaultManager().fileExistsAtPath(self.traceFileName.path!) && self.model.batchTrace {
+                            if FileManager.default.fileExists(atPath: self.traceFileName.path!) && self.model.batchTrace {
                                 var err:NSError?
                                 do {
-                                    let fileHandle = try NSFileHandle(forWritingToURL: self.traceFileName)
+                                    let fileHandle = try FileHandle(forWritingTo: self.traceFileName)
                                     fileHandle.seekToEndOfFile()
-                                    let data = traceOutput.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
-                                    fileHandle.writeData(data!)
+                                    let data = traceOutput.data(using: String.Encoding.utf8, allowLossyConversion: false)
+                                    fileHandle.write(data!)
                                     fileHandle.closeFile()
                                 } catch let error as NSError {
                                     err = error
@@ -169,13 +169,13 @@ class BatchRun {
                             }
                             
                             // Activation Trace File
-                            if NSFileManager.defaultManager().fileExistsAtPath(self.activationTraceFileName.path!) && self.model.activationTrace {
+                            if FileManager.default.fileExists(atPath: self.activationTraceFileName.path!) && self.model.activationTrace {
                                 var err:NSError?
                                 do {
-                                    let fileHandle = try NSFileHandle(forWritingToURL: self.activationTraceFileName)
+                                    let fileHandle = try FileHandle(forWritingTo: self.activationTraceFileName)
                                     fileHandle.seekToEndOfFile()
-                                    let data = activationTraceOutput.dataUsingEncoding(NSUTF8StringEncoding, allowLossyConversion: false)
-                                    fileHandle.writeData(data!)
+                                    let data = activationTraceOutput.data(using: String.Encoding.utf8, allowLossyConversion: false)
+                                    fileHandle.write(data!)
                                     fileHandle.closeFile()
                                 } catch let error as NSError {
                                     err = error
@@ -187,14 +187,14 @@ class BatchRun {
                             var err:NSError?
                             // Output file
                             do {
-                                try output.writeToURL(self.outputFileName, atomically: false, encoding: NSUTF8StringEncoding)
+                                try output.write(to: self.outputFileName, atomically: false, encoding: String.Encoding.utf8)
                             } catch let error as NSError {
                                 err = error
                                 self.mainModel.addToTraceField("Can't write datafile \(err)")
                             }
                             // Trace file
                             do {
-                                try traceOutput.writeToURL(self.traceFileName, atomically: false, encoding: NSUTF8StringEncoding)
+                                try traceOutput.write(to: self.traceFileName, atomically: false, encoding: String.Encoding.utf8)
                             } catch let error as NSError {
                                 err = error
                                 self.mainModel.addToTraceField("Can't write tracefile \(err)")
@@ -202,7 +202,7 @@ class BatchRun {
                             
                             // Activation Trace file
                             do {
-                                try traceOutput.writeToURL(self.activationTraceFileName, atomically: false, encoding: NSUTF8StringEncoding)
+                                try traceOutput.write(to: self.activationTraceFileName, atomically: false, encoding: String.Encoding.utf8)
                             } catch let error as NSError {
                                 err = error
                                 self.mainModel.addToTraceField("Can't write activation tracefile \(err)")
@@ -211,7 +211,7 @@ class BatchRun {
                     }
                 case "reset":
                     self.mainModel.addToTraceField("Resetting models")
-                    dispatch_async(dispatch_get_main_queue()) {
+                    DispatchQueue.main.async {
                         self.controller.updateAllViews()
                     }
                     print("*** About to reset model ***")
@@ -233,9 +233,9 @@ class BatchRun {
                         self.mainModel.addToTraceField("Illegal task name in run")
                         return
                     }
-                    let taskPath = self.directory.URLByAppendingPathComponent(filename! + ".brain").path
+                    let taskPath = self.directory.appendingPathComponent(filename! + ".brain").path
                     self.mainModel.addToTraceField("Loading image file \(taskPath!)")
-                    guard let m = (NSKeyedUnarchiver.unarchiveObjectWithFile(taskPath!) as? Model) else { return }
+                    guard let m = (NSKeyedUnarchiver.unarchiveObject(withFile: taskPath!) as? Model) else { return }
                     self.model = m
                     self.model.dm.reintegrateChunks()
                     self.model.batchMode = true
@@ -245,7 +245,7 @@ class BatchRun {
                         self.mainModel.addToTraceField("Illegal task name in run")
                         return
                     }
-                    let taskPath = self.directory.URLByAppendingPathComponent(filename! + ".brain").path
+                    let taskPath = self.directory.appendingPathComponent(filename! + ".brain").path
                     self.mainModel.addToTraceField("Saving image to file \(taskPath!)")
                     NSKeyedArchiver.archiveRootObject(self.model, toFile: taskPath!)
                 default: break
@@ -253,16 +253,16 @@ class BatchRun {
                 }
             }
             self.mainModel.addToTraceField("Done")
-            dispatch_async(dispatch_get_main_queue()) {
+            DispatchQueue.main.async {
                 self.controller.updateAllViews()
             }
             self.progress = 100 * (Double(i) + 1) / Double(numberOfRepeats!)
-            dispatch_async(dispatch_get_main_queue()) {
-                NSNotificationCenter.defaultCenter().postNotificationName("progress",object: nil)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: Notification.Name(rawValue: "progress"),object: nil)
             }
             }
-            dispatch_async(dispatch_get_main_queue()) {
-                NSNotificationCenter.defaultCenter().postNotificationName("progress",object: nil)
+            DispatchQueue.main.async {
+                NotificationCenter.default.post(name: Notification.Name(rawValue: "progress"),object: nil)
             }
         }
 

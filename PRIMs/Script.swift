@@ -429,15 +429,15 @@ class IndexedArray {
     }
 }
 
-enum ParsingError: ErrorType {
+enum ParsingError: Error {
     case UnExpectedEOF
     case Expected(String, String)
     case OperatorExpected(String, String)
     case InvalidAssignmentLHS
 }
 
-enum RunTimeError: ErrorType {
-    case unDeclaratedIdentifier(String)
+enum RunTimeError: Error {
+    case unDeclaratedI,dentifier(String)
     case nonNumberArgument
     case missingSecondArgument
     case divisionByZero
