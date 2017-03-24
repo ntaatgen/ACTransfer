@@ -20,14 +20,14 @@ class Parser  {
         scanner = Scanner(string: text)
         model.modelText = text
         self.taskNumber = taskNumber
-        whitespaceNewLineParentheses.formUnion(with: whitespaceNewLine)
-        whiteSpaceNewLineParenthesesEqual.formUnion(with: whitespaceNewLine)
+        whitespaceNewLineParentheses.formUnion(whitespaceNewLine)
+        whiteSpaceNewLineParenthesesEqual.formUnion(whitespaceNewLine)
     }
 
     var defaultActivation: Double? = nil
     fileprivate let whitespaceNewLine = CharacterSet.whitespacesAndNewlines
-    fileprivate let whitespaceNewLineParentheses: NSMutableCharacterSet = NSMutableCharacterSet(charactersIn: "{}()")
-    fileprivate let whiteSpaceNewLineParenthesesEqual: NSMutableCharacterSet = NSMutableCharacterSet(charactersIn: "{}()=,")
+    var whitespaceNewLineParentheses: CharacterSet = CharacterSet(charactersIn: "{}()")
+    var whiteSpaceNewLineParenthesesEqual: CharacterSet = CharacterSet(charactersIn: "{}()=,")
     var globalVariableMapping: [String:Int] = [:]
     
     /**
@@ -629,7 +629,7 @@ class Parser  {
         let object = PRObject(name: m.generateName(name!), attributes: attributes, superObject: superObject)
         m.addToTraceField("Adding object \(object.name) with attributes \(object.attributes)")
         while scanner.scanString("(", into: nil) {
-            parseObject(object)
+            _ = parseObject(object)
         }
         if !scanner.scanString(")", into: nil) {
             m.addToTraceField("Missing ')' in object definition \(name!)")
@@ -761,7 +761,7 @@ class Parser  {
             m.addToTraceField("Missing '{' in Sji definition.")
             return false
         }
-        let braceSet = NSMutableCharacterSet(charactersIn: "{}")
+        let braceSet = CharacterSet(charactersIn: "{}")
         var script: String = ""
         var braceCount = 1
         while braceCount > 0 {

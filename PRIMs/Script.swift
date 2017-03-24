@@ -430,14 +430,14 @@ class IndexedArray {
 }
 
 enum ParsingError: Error {
-    case UnExpectedEOF
-    case Expected(String, String)
-    case OperatorExpected(String, String)
-    case InvalidAssignmentLHS
+    case unExpectedEOF
+    case expected(String, String)
+    case operatorExpected(String, String)
+    case invalidAssignmentLHS
 }
 
 enum RunTimeError: Error {
-    case unDeclaratedI,dentifier(String)
+    case unDeclaratedIdentifier(String)
     case nonNumberArgument
     case missingSecondArgument
     case divisionByZero

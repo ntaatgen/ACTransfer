@@ -607,7 +607,8 @@ func openJar(_ content: [Factor], model: Model?) throws -> (result: Factor?, don
  Memory Management
  */
 func reportMemory(_ content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
-    var info = task_basic_info()
+    // Disabled because of an incompatibility in Swift 3 (doesn't accept task_info_t($0)
+/*    var info = task_basic_info()
     var count = mach_msg_type_number_t(MemoryLayout.size(ofValue: info))/4
     
     let kerr: kern_return_t = withUnsafeMutablePointer(to: &info) {
@@ -623,8 +624,9 @@ func reportMemory(_ content: [Factor], model: Model?) throws -> (result: Factor?
         return(Factor.str("\(info.resident_size)"), true)
     }
     else {
+ */
         return(Factor.str("Error"), true)
-    }
+    //    }
 }
 
 /* Put the contents of the imaginal buffer in the declarative memory
@@ -637,10 +639,10 @@ func imaginalToDM(_ content: [Factor], model: Model?) throws -> (result: Factor?
 }
 
 /**
- - Set the number of references of a chunk
- - 1st argument: chunk name
- - 2nd argument: number of references (int)
- - */
+ Set the number of references of a chunk
+ 1st argument: chunk name
+ 2nd argument: number of references (int)
+ */
 func setReferences(_ content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
     guard content.count == 2 else { throw RunTimeError.invalidNumberOfArguments }
     let chunk = model!.dm.chunks[content[0].description]
@@ -740,7 +742,7 @@ func selectProblem(_ content: [Factor], model: Model?) throws -> (result: Factor
 
         }
 
-    let bestMatchFinal = ScriptArray(elements: [generateFactorExpression(Factor.str(bestMatch[0].description)), generateFactorExpression(Factor.str(bestMatch[1].description)), generateFactorExpression(Factor.realNumber(Double(bestMatch[2].description)!))])
+    let bestMatchFinal = ScriptArray(elements: [generateFactorExpression(Factor.str((bestMatch[0] as AnyObject).description)), generateFactorExpression(Factor.str((bestMatch[1] as AnyObject).description)), generateFactorExpression(Factor.realNumber(Double((bestMatch[2] as AnyObject).description)!))])
     return (Factor.arr(bestMatchFinal), true)
 
     }

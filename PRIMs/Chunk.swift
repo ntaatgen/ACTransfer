@@ -424,7 +424,7 @@ class Chunk: NSObject, NSCoding {
                 for (_,value) in bufferChunk.slotvals {
                     switch value {
                     case .symbol(let valchunk):
-                        var posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * (valchunk.sjiWithoutLog(self)) + 1) / (assocValue + Double(freqNiCj(valchunk))))
+                        var posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * (valchunk.sjiWithoutLog(self) + 1)) / (assocValue + Double(freqNiCj(valchunk))))
 //                        if posteriorSji < 0 {
 //                            print(posteriorSji)
 //                            print(valchunk)

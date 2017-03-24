@@ -38,7 +38,7 @@ class BatchRun {
         DispatchQueue.global(priority: DispatchQueue.GlobalQueuePriority.low).async { () -> Void in
 
         var scanner = Scanner(string: self.batchScript)
-        let whiteSpaceAndNL = NSMutableCharacterSet.whitespaceAndNewline()
+        let whiteSpaceAndNL = CharacterSet.whitespacesAndNewlines
         _ = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
         let numberOfRepeats = scanner.scanInt()
         if numberOfRepeats == nil {
@@ -77,7 +77,7 @@ class BatchRun {
                     }
                     
                     while !scanner.isAtEnd && (scanner.string as NSString).character(at: scanner.scanLocation) != 10 && (scanner.string as NSString).character(at: scanner.scanLocation) != 13 {
-                        let batchParam = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL)
+                        let batchParam = scanner.scanUpToCharactersFromSet(whiteSpaceAndNL as CharacterSet)
                         self.model.batchParameters.append(batchParam!)
                         self.mainModel.addToTraceField("Parameter: \(batchParam!)")
                     }
@@ -140,7 +140,7 @@ class BatchRun {
                         
                         if !newfile {
                             // Output File
-                            if FileManager.default.fileExists(atPath: self.outputFileName.path!) {
+                            if FileManager.default.fileExists(atPath: self.outputFileName.path) {
                                 var err:NSError?
                                 do {
                                     let fileHandle = try FileHandle(forWritingTo: self.outputFileName)
@@ -154,7 +154,7 @@ class BatchRun {
                                 }
                             }
                             // Trace File
-                            if FileManager.default.fileExists(atPath: self.traceFileName.path!) && self.model.batchTrace {
+                            if FileManager.default.fileExists(atPath: self.traceFileName.path) && self.model.batchTrace {
                                 var err:NSError?
                                 do {
                                     let fileHandle = try FileHandle(forWritingTo: self.traceFileName)
@@ -169,7 +169,7 @@ class BatchRun {
                             }
                             
                             // Activation Trace File
-                            if FileManager.default.fileExists(atPath: self.activationTraceFileName.path!) && self.model.activationTrace {
+                            if FileManager.default.fileExists(atPath: self.activationTraceFileName.path) && self.model.activationTrace {
                                 var err:NSError?
                                 do {
                                     let fileHandle = try FileHandle(forWritingTo: self.activationTraceFileName)
@@ -234,8 +234,8 @@ class BatchRun {
                         return
                     }
                     let taskPath = self.directory.appendingPathComponent(filename! + ".brain").path
-                    self.mainModel.addToTraceField("Loading image file \(taskPath!)")
-                    guard let m = (NSKeyedUnarchiver.unarchiveObject(withFile: taskPath!) as? Model) else { return }
+                    self.mainModel.addToTraceField("Loading image file \(taskPath)")
+                    guard let m = (NSKeyedUnarchiver.unarchiveObject(withFile: taskPath) as? Model) else { return }
                     self.model = m
                     self.model.dm.reintegrateChunks()
                     self.model.batchMode = true
@@ -246,8 +246,8 @@ class BatchRun {
                         return
                     }
                     let taskPath = self.directory.appendingPathComponent(filename! + ".brain").path
-                    self.mainModel.addToTraceField("Saving image to file \(taskPath!)")
-                    NSKeyedArchiver.archiveRootObject(self.model, toFile: taskPath!)
+                    self.mainModel.addToTraceField("Saving image to file \(taskPath)")
+                    NSKeyedArchiver.archiveRootObject(self.model, toFile: taskPath)
                 default: break
                     
                 }

@@ -312,9 +312,14 @@ class Declarative: NSObject, NSCoding  {
         /* Return similarity if there is one, else return -1
          Similarity is calculated by dividing the smallest number by the largest number.*/
         if (Int(x.description) != nil && Int(y.description) != nil)  {
+            print("mismatchNumbers")
+            print(x)
+            print(y)
             let maxValue = max(Double(x.description)!, Double(y.description)!)
             let minValue = min(Double(x.description)!, Double(y.description)!)
             let mismatch = (minValue - maxValue) / 10
+            print(mismatch)
+            print("\n")
             return mismatch >= -1 ? mismatch : -1
         } else {
             return -1
@@ -345,7 +350,8 @@ class Declarative: NSObject, NSCoding  {
         if (Int(x.description) != nil && Int(y.description) != nil)  {
             let maxValue = max(Double(x.description)!, Double(y.description)!)
             let minValue = min(Double(x.description)!, Double(y.description)!)
-            let mismatch = (minValue - maxValue) / 10
+            var mismatch = (minValue - maxValue) / 10
+            mismatch = mismatch * 2
             return mismatch >= -1 ? mismatch : -1
         } else {
             return -1
@@ -359,7 +365,7 @@ class Declarative: NSObject, NSCoding  {
         if (x.description == y.description) {
             mismatch = 0
         } else if (Double(x.description) != nil && Double(y.description) != nil) {
-            mismatch = mismatchNumbersIntercept(x, y)
+            mismatch = mismatchNumbers(x, y)
         } else {
             mismatch = -1
         }
