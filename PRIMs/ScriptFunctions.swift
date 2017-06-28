@@ -574,17 +574,21 @@ func strToInt(_ content: [Factor], model: Model?) throws -> (result: Factor?, do
  */
 func openJar(_ content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
     /// Write to file
-    let output = "=======================================================\n"
-    do {
-        let fileHandle = try FileHandle(forWritingTo: URL(string: "/Users/trudybuwalda/Desktop/Holiday/assocs.dat")!)
-        fileHandle.seekToEndOfFile()
-        let data = output.data(using: String.Encoding.utf8, allowLossyConversion: false)
-        fileHandle.write(data!)
-        fileHandle.closeFile()
-    } catch let error as NSError {
-        let err = error
-        print(err)
-    }
+//    let output = "=======================================================\n"
+//    var outputstring = "/Users/trudybuwalda/Desktop/Holiday/assocs.dat"
+//    if(content[0] != nil) {
+//        outputstring = "/Users/trudybuwalda/Desktop"
+//    }
+//    do {
+//        let fileHandle = try FileHandle(forWritingTo: URL(string: "/Users/trudybuwalda/Desktop/Holiday/assocs.dat")!)
+//        fileHandle.seekToEndOfFile()
+//        let data = output.data(using: String.Encoding.utf8, allowLossyConversion: false)
+//        fileHandle.write(data!)
+//        fileHandle.closeFile()
+//    } catch let error as NSError {
+//        let err = error
+//        print(err)
+//    }
 
 //    let task = NSTask()
 //    task.launchPath = "/usr/bin/java"

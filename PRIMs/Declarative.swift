@@ -35,6 +35,7 @@ class Declarative: NSObject, NSCoding  {
     static let newPartialMatchingDefault: Double? = nil
     static let assocDefault = 10.0
     static let associativeLearningDefault = false
+    static let baselevelLearningDefault = true
     /// Baseleveldecay parameter (d in ACT-R)
     var baseLevelDecay: Double = baseLevelDecayDefault
     /// Optimized learning on or off
@@ -81,6 +82,8 @@ class Declarative: NSObject, NSCoding  {
     var assoc = assocDefault
     /// associativeLearning parameter
     var associativeLearning = associativeLearningDefault
+    /// baselevelLearning parameter
+    var baselevelLearning = baselevelLearningDefault
     
     
     /// Dictionary with all the chunks in DM, maps name onto Chunk
@@ -312,14 +315,9 @@ class Declarative: NSObject, NSCoding  {
         /* Return similarity if there is one, else return -1
          Similarity is calculated by dividing the smallest number by the largest number.*/
         if (Int(x.description) != nil && Int(y.description) != nil)  {
-            print("mismatchNumbers")
-            print(x)
-            print(y)
             let maxValue = max(Double(x.description)!, Double(y.description)!)
             let minValue = min(Double(x.description)!, Double(y.description)!)
             let mismatch = (minValue - maxValue) / 10
-            print(mismatch)
-            print("\n")
             return mismatch >= -1 ? mismatch : -1
         } else {
             return -1

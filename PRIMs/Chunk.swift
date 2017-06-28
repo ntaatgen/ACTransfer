@@ -421,7 +421,19 @@ class Chunk: NSObject, NSCoding {
         if let bufferChunk = model.buffers[bufferName] {
             let bc = bufferChunk.slotvals["isa"]!
             if bc.description == "fact" {
+                var array = [Value]()
                 for (_,value) in bufferChunk.slotvals {
+                    var itemExists = false
+                    for element in array {
+                        if(value.description == element.description) {
+                            itemExists = true
+                        }
+                    }
+                    if !itemExists {
+                        array.append(value)
+                    }
+                }
+                for (value) in array {
                     switch value {
                     case .symbol(let valchunk):
                         var posteriorSji = log((assocValue + Double(freqNiCj(valchunk)) * (valchunk.sjiWithoutLog(self) + 1)) / (assocValue + Double(freqNiCj(valchunk))))
@@ -531,8 +543,12 @@ class Chunk: NSObject, NSCoding {
         if creationTime == nil {return 0}
         
         let spreadingAct = self.spreadingActivation()
-        //let baselevelAct = self.baseLevelActivation()
-        let baselevelAct = 1.0
+        var baselevelAct: Double
+        if model.dm.baselevelLearning {
+            baselevelAct = self.baseLevelActivation()
+        } else {
+            baselevelAct = 1.0
+        }
         let noise = calculateNoise()
         if model.batchMode && model.activationTrace {
             if self.type == "fact" {
