@@ -66,7 +66,8 @@ let scriptFunctions: [String:([Factor], Model?) throws -> (result: Factor?, done
     "imaginal-to-dm": imaginalToDM,
     "set-references": setReferences,
     "set-goal": setGoal,
-    "create-new-goal": createNewGoal
+    "create-new-goal": createNewGoal,
+    "reset-activations": resetActivations
     ]
 
 
@@ -771,4 +772,15 @@ func createNewGoal(content: [Factor], model: Model?) throws -> (result: Factor?,
     return(nil,true)
 }
 
+func resetActivations(content: [Factor], model: Model?) throws -> (result: Factor?, done: Bool) {
+    for (_, chunk) in model!.dm.chunks {
+        if model!.dm!.optimizedLearning {
+            chunk.references = 1
+        } else {
+            chunk.referenceList = [model!.time]
+        }
+        chunk.creationTime = model!.time
+    }
+    return(nil,true)
+}
 
